@@ -3,20 +3,26 @@ import torch
 import typer
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
-from model import SimpleConvNet
+from model_dino import SimpleDinoClassifier
 
 # Device configuration
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
-# Training parameters
+# Training parameters (can later be moved to a config file)
 PARAMS = {
-    "lr": 1e-3,                  # Learning rate
-    "batch_size": 32,            # Batch size
-    "epochs": 15,                # Number of training epochs
+    "lr": 1e-3,             # Learning rate
+    "batch_size": 32,       # Batch size
+    "epochs": 5,            # Number of training epochs
     "processed_data_dir": "data/processed",  # Directory containing processed data
-    "model_save_path": "models/simple_convnet.pth",  # Path to save the model
-    "figure_save_path": "reports/figures/training_statistics.png",  # Path to save training stats
-    "num_classes": 120           # Number of output classes
+    "model_save_path": "models/dino_model.pth",  # Path to save the model
+    "figure_save_path": "reports/figures/dino_training_statistics.png",  # Path to save training statistics
+    "model_params": {  # Parameters for the model
+        "num_classes": 120,  # Number of output classes
+        "dino_model": "vit_small_patch16_224_dino",  # Pretrained DINO model
+        "hidden_units": 512,  # Hidden layer units in classifier
+        "dropout_rate": 0.25,  # Dropout rate
+        "freeze_dino": False,  # Whether to freeze DINO backbone
+    },
 }
 
 
@@ -47,10 +53,9 @@ def train(
     processed_data_dir: str = PARAMS["processed_data_dir"],
     model_save_path: str = PARAMS["model_save_path"],
     figure_save_path: str = PARAMS["figure_save_path"],
-    num_classes: int = PARAMS["num_classes"],
 ) -> None:
     """
-    Train the SimpleConvNet model using the specified parameters.
+    Train the SimpleDinoClassifier model using the specified parameters.
 
     Args:
         lr (float): Learning rate.
@@ -59,9 +64,8 @@ def train(
         processed_data_dir (str): Path to the directory with processed datasets.
         model_save_path (str): Path to save the trained model.
         figure_save_path (str): Path to save training statistics.
-        num_classes (int): Number of output classes.
     """
-    print("Starting training...")
+    print("Starting training with SimpleDinoClassifier...")
     print(f"{lr=}, {batch_size=}, {epochs=}")
 
     # Load datasets
@@ -72,12 +76,11 @@ def train(
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     # Initialize the model
-    model = SimpleConvNet(num_classes=num_classes).to(DEVICE)
+    model = SimpleDinoClassifier(params=PARAMS["model_params"]).to(DEVICE)
 
     # Define loss function and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4)
-
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     # Track training statistics
     statistics = {"train_loss": [], "val_loss": [], "train_accuracy": [], "val_accuracy": []}
