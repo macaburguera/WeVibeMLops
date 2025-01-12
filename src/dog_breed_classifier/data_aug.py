@@ -1,10 +1,17 @@
 import os
 import pandas as pd
+import shutil
 import torch
 import zipfile
 from torchvision import transforms
+from albumentations import (
+    HorizontalFlip, Rotate, Normalize, Resize, CLAHE,
+    RandomBrightnessContrast, GaussNoise, ShiftScaleRotate, OneOf, Compose
+)
+from albumentations.pytorch import ToTensorV2
 from sklearn.model_selection import train_test_split
 from PIL import Image
+import numpy as np
 import typer
 
 
@@ -25,8 +32,27 @@ def download_data(gdrive_link: str, raw_data_dir: str):
         os.remove(zip_path)  # Optionally remove the zip file after extraction
 
 
-def preprocess_images(images_dir: str, labels: pd.DataFrame, transform):
-    """Preprocess images by applying resizing and normalization."""
+def albumentations_transformations(image_size=(224, 224)):
+    """Define varied Albumentations transformations for more diversity."""
+    return Compose([
+        Resize(height=image_size[0], width=image_size[1]),
+        OneOf([
+            HorizontalFlip(p=1.0),
+            Rotate(limit=30, p=1.0),
+            ShiftScaleRotate(shift_limit=0.05, scale_limit=0.05, rotate_limit=15, p=1.0),
+        ], p=0.8),
+        OneOf([
+            CLAHE(clip_limit=4.0, tile_grid_size=(8, 8), p=1.0),
+            RandomBrightnessContrast(p=1.0),
+            GaussNoise(var_limit=(10, 50), p=1.0),
+        ], p=0.8),
+        Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2(),
+    ])
+
+
+def preprocess_images_with_augmentation(images_dir: str, labels: pd.DataFrame, transform=None, num_augmentations=0):
+    """Preprocess images by applying varied transformations, resizing, and generating augmented versions."""
     image_tensors = []
     targets = []
     for _, row in labels.iterrows():
@@ -35,14 +61,29 @@ def preprocess_images(images_dir: str, labels: pd.DataFrame, transform):
         img_path = os.path.join(images_dir, f"{img_id}.jpg")
         
         try:
-            image = Image.open(img_path).convert("RGB")
+            image = np.array(Image.open(img_path).convert("RGB"))
         except FileNotFoundError:
             print(f"Image {img_path} not found. Skipping...")
             continue
-
-        image = transform(image)
-        image_tensors.append(image)
-        targets.append(breed)
+        
+        if transform:
+            # Original image
+            image_tensors.append(transform(image=image)['image'])
+            targets.append(breed)
+            
+            # Generate augmented versions
+            for _ in range(num_augmentations):
+                augmented_image = transform(image=image)['image']
+                image_tensors.append(augmented_image)
+                targets.append(breed)
+        else:
+            # Default normalization for validation/test without augmentation
+            image = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+            ])(Image.fromarray(image))
+            image_tensors.append(image)
+            targets.append(breed)
     
     return torch.stack(image_tensors), torch.tensor(targets)
 
@@ -64,16 +105,13 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
     val_labels, test_labels = train_test_split(temp_labels, test_size=0.5, stratify=temp_labels['breed'], random_state=42)
     
     # Define transformations
-    transform = transforms.Compose([
-        transforms.Resize(image_size),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-    ])
+    train_transform = albumentations_transformations(image_size=image_size)
+    val_transform = albumentations_transformations(image_size=image_size)  # Resize and normalize
     
     # Preprocess images
-    train_images, train_targets = preprocess_images(images_dir, train_labels, transform)
-    val_images, val_targets = preprocess_images(images_dir, val_labels, transform)
-    test_images, test_targets = preprocess_images(images_dir, test_labels, transform)
+    train_images, train_targets = preprocess_images_with_augmentation(images_dir, train_labels, transform=train_transform)
+    val_images, val_targets = preprocess_images_with_augmentation(images_dir, val_labels, transform=val_transform)
+    test_images, test_targets = preprocess_images_with_augmentation(images_dir, test_labels, transform=train_transform, num_augmentations=2)
     
     # Save data to .pt files
     subsets = {
