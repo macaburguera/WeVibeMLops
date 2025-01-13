@@ -3,7 +3,7 @@ from torch import nn
 
 
 class SimpleConvNet(nn.Module):
-    """A simple convolutional neural network with additional dropout."""
+    """A simple convolutional neural network with BatchNorm and LeakyReLU."""
 
     def __init__(self, num_classes: int = 120) -> None:
         """
@@ -13,14 +13,17 @@ class SimpleConvNet(nn.Module):
             num_classes (int): Number of output classes.
         """
         super().__init__()
-        # Convolutional layers
+        # Convolutional layers with BatchNorm
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(64)
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.bn3 = nn.BatchNorm2d(128)
 
         # Dropout layers for regularization
-        self.dropout1 = nn.Dropout(0.3)  # After conv1
-        self.dropout2 = nn.Dropout(0.4)  # After conv2
+        self.dropout1 = nn.Dropout(0.5)  # After conv1
+        self.dropout2 = nn.Dropout(0.5)  # After conv2
         self.dropout3 = nn.Dropout(0.5)  # After conv3
         self.dropout_fc = nn.Dropout(0.5)  # For fully connected layers
 
@@ -30,6 +33,9 @@ class SimpleConvNet(nn.Module):
 
         # Max Pooling layer
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        # LeakyReLU activation
+        self.activation = nn.LeakyReLU(negative_slope=0.01)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -41,20 +47,20 @@ class SimpleConvNet(nn.Module):
         Returns:
             torch.Tensor: Output logits of shape (batch_size, num_classes).
         """
-        x = torch.relu(self.conv1(x))
+        x = self.activation(self.bn1(self.conv1(x)))
         x = self.pool(x)  # Downsample
         x = self.dropout1(x)
 
-        x = torch.relu(self.conv2(x))
+        x = self.activation(self.bn2(self.conv2(x)))
         x = self.pool(x)  # Downsample
         x = self.dropout2(x)
 
-        x = torch.relu(self.conv3(x))
+        x = self.activation(self.bn3(self.conv3(x)))
         x = self.pool(x)  # Downsample
         x = self.dropout3(x)
 
         x = torch.flatten(x, 1)  # Flatten for fully connected layer
-        x = torch.relu(self.fc1(x))
+        x = self.activation(self.fc1(x))
         x = self.dropout_fc(x)
 
         x = self.fc2(x)

@@ -1,0 +1,9 @@
+{
+    "value": 1.945148800810178,
+    "params": {
+        "lr": 1.0974937463173206e-05,
+        "batch_size": 16,
+        "dropout_rate": 0.30347331180455217,
+        "freeze_dino": true
+    }
+}
