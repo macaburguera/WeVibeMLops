@@ -52,9 +52,11 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
     # Paths
     labels_path = os.path.join(raw_data_dir, "labels.csv")
     images_dir = os.path.join(raw_data_dir, "images")
+    print("loaded paths")
     
     # Load labels
     labels = pd.read_csv(labels_path)
+    print("Loaded labels")
     
     # Encode breeds as integers
     labels['breed'] = labels['breed'].astype('category').cat.codes
@@ -62,6 +64,7 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
     # Split into train, test, and validation sets
     train_labels, temp_labels = train_test_split(labels, test_size=0.3, stratify=labels['breed'], random_state=42)
     val_labels, test_labels = train_test_split(temp_labels, test_size=0.5, stratify=temp_labels['breed'], random_state=42)
+    print("data split")
     
     # Define transformations
     transform = transforms.Compose([
@@ -69,11 +72,15 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
         transforms.ToTensor(),
         transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
     ])
+    print("transform defined")
     
     # Preprocess images
     train_images, train_targets = preprocess_images(images_dir, train_labels, transform)
+    print("train images preprocessed")
     val_images, val_targets = preprocess_images(images_dir, val_labels, transform)
+    print("val images preprocessed")
     test_images, test_targets = preprocess_images(images_dir, test_labels, transform)
+    print("test images preprocessed")
     
     # Save data to .pt files
     subsets = {
