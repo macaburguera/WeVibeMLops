@@ -9,10 +9,4 @@ Pillow==11.1.0
 pydantic==1.10.9
 scikit_learn==1.2.2
 timm==1.0.13
-tinycss2==1.4.0
-tomlkit==0.13.2
-tornado==6.4.2
-tqdm==4.67.1
-traitlets==5.14.3
-triton==3.1.0
 typer==0.15.1
