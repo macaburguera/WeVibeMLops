@@ -13,7 +13,7 @@ PARAMS = {
     "lr": 1e-4,
     "batch_size": 32,
     "epochs": 15,
-    "processed_data_dir": "data/processed/dino",
+    "processed_data_dir": "data/processed",
     "model_save_path": "models/dino_model.pth",
     "figure_save_path": "reports/figures/dino_training_statistics.png",
     "model_params": {

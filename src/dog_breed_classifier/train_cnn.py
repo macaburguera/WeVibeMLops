@@ -13,7 +13,7 @@ PARAMS = {
     "lr": 1e-4,
     "batch_size": 16,
     "epochs": 20,
-    "processed_data_dir": "data/processed/cnn",
+    "processed_data_dir": "data/processed",
     "model_save_path": "models/cnn_model.pth",
     "figure_save_path": "reports/figures/cnn_training_statistics.png",
     "num_classes": 120

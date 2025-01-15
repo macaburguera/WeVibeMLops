@@ -8,7 +8,7 @@ conda activate dogs
 mkdir -p logs
 
 # Single log file for all outputs
-LOG_FILE="logs/all_runs.log"
+LOG_FILE="logs/training_sesion.log"
 
 # Clear the log file before running
 > $LOG_FILE
