@@ -11,13 +11,15 @@
    ```
    This project has been tested with PyTorch 2.2.0 and CUDA 11.8.
 
-2. **Install the Required Packages**  
-   ```bash
-   pip install -r requirements.txt
-   ```
-   If PyTorch gives any issues, comment out the related lines in `requirements.txt` and install PyTorch manually:  
+2. **Install the Required Packages**
+
+   First, install PyTorch manually:  
    ```bash
    pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu118
+   ```
+   Then go on with the rest
+   ```bash
+   pip install -r requirements.txt
    ```
 
 ---
