@@ -1,5 +1,71 @@
 # Dog Breed Classifier (Group 45)
 
+## Installation
+
+### Setting Up the Environment
+
+1. **Create a Conda Environment**  
+   ```bash
+   conda create --name dogs python=3.11
+   conda activate dogs
+   ```
+   This project has been tested with PyTorch 2.2.0 and CUDA 11.8.
+
+2. **Install the Required Packages**  
+   ```bash
+   pip install -r requirements.txt
+   ```
+   If PyTorch gives any issues, comment out the related lines in `requirements.txt` and install PyTorch manually:  
+   ```bash
+   pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu118
+   ```
+
+---
+
+### Setting Up the Data
+
+After setting up the environment, run `data.py` or `data_aug.py` (for data augmentation) to process the data from the source:
+
+```bash
+python src/dog_breed_classifier/data_aug.py
+```
+
+---
+
+### Running Training Sessions
+
+#### Train All Models at Once
+In Linux, Git Bash, or WSL, you can train all models by running the following commands:
+```bash
+chmod +x train_all.sh
+./train_all.sh
+```
+
+#### Train Each Model Individually
+To train a specific model, run:
+```bash
+python src/dog_breed_classifier/train_xxx.py
+```
+Replace `xxx` with one of the following:  
+- `cnn`  
+- `dino`  
+- `resnet`
+
+---
+
+### Updating `requirements.txt`
+
+To update the `requirements.txt` file based on your current environment:
+1. Install `pipreqs`:
+   ```bash
+   pip install pipreqs
+   ```
+2. Generate an updated `requirements.txt`:
+   ```bash
+   pipreqs . --force
+   ```
+
+
 ## Overall Goal
 The goal of this project is to build a **dog breed classifier** capable of distinguishing between 120 different breeds as accurately as possible. The focus will be on achieving fine-grained classification by leveraging state-of-the-art deep learning techniques and pretrained models.
 

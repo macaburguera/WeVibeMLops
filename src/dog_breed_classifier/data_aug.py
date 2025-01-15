@@ -140,7 +140,7 @@ def main(
     image_size = tuple(map(int, image_size.split(',')))
     
     # Step 1: Download data
-    download_data(gdrive_link, raw_data_dir)
+    #download_data(gdrive_link, raw_data_dir)
 
     # Step 2: Split, process, and save data
     split_data(raw_data_dir, processed_data_dir, image_size=image_size)
