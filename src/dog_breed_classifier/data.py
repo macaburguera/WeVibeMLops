@@ -90,7 +90,7 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
 
 
 def main(
-    gdrive_link: str = "https://drive.google.com/drive/folders/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0?usp=drive_link",  # Default Google Drive link
+    gdrive_link: str = "https://drive.google.com/drive/folders/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0?usp=sharing",  # Default Google Drive link
     raw_data_dir: str = "data/raw",                   # Default raw data folder
     processed_data_dir: str = "data/processed",       # Default processed data folder
     image_size: str = "224,224"                       # Default image size as a string
