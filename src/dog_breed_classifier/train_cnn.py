@@ -11,8 +11,8 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Training parameters
 PARAMS = {
     "lr": 1e-4,
-    "batch_size": 16,
-    "epochs": 20,
+    "batch_size": 32,
+    "epochs": 5,
     "processed_data_dir": "data/processed",
     "model_save_path": "models/cnn_model.pth",
     "figure_save_path": "reports/figures/cnn_training_statistics.png",
@@ -25,8 +25,9 @@ def train():
 
     # Load datasets
     def load_dataset(subset, data_dir):
-        images = torch.load(os.path.join(data_dir, f"{subset}_images.pt"))
-        targets = torch.load(os.path.join(data_dir, f"{subset}_targets.pt"))
+        subset_dir = os.path.join(data_dir, subset)
+        images = torch.load(os.path.join(subset_dir, f"{subset}_images.pt"), map_location=DEVICE)
+        targets = torch.load(os.path.join(subset_dir, f"{subset}_targets.pt"))
         return TensorDataset(images, targets)
 
     train_dataset = load_dataset("train", PARAMS["processed_data_dir"])
@@ -40,7 +41,7 @@ def train():
 
     # Define loss and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=PARAMS["lr"])
+    optimizer = torch.optim.SGD(model.parameters(), lr=PARAMS["lr"], momentum=0.9)
 
     # Training loop
     statistics = {"train_loss": [], "val_loss": []}

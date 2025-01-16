@@ -28,8 +28,8 @@ def train():
 
     # Load datasets
     def load_dataset(subset, data_dir):
-        images = torch.load(os.path.join(data_dir, f"{subset}_images.pt"))
-        targets = torch.load(os.path.join(data_dir, f"{subset}_targets.pt"))
+        images = torch.load(os.path.join(data_dir, subset, f"{subset}_images.pt"))
+        targets = torch.load(os.path.join(data_dir, subset, f"{subset}_targets.pt"))
         return TensorDataset(images, targets)
 
     train_dataset = load_dataset("train", PARAMS["processed_data_dir"])
@@ -43,7 +43,7 @@ def train():
 
     # Define loss and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=PARAMS["lr"])
+    optimizer = torch.optim.SGD(model.parameters(), lr=PARAMS["lr"], momentum=0.9)
 
     # Training loop
     statistics = {"train_loss": [], "val_loss": []}
