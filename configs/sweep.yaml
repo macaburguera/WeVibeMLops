@@ -1,0 +1,18 @@
+method: random  # Options: grid, random, bayes
+metric:
+  name: val_accuracy  # Metric to optimize
+  goal: maximize      # Goal: maximize or minimize
+parameters:
+  learning_rate:
+    distribution: uniform  # Sampling from a uniform distribution
+    min: 0.0001
+    max: 0.1
+  batch_size:
+    values: [16, 32]  # Specific values for batch size
+  epochs:
+    values: [7, 10]  # Different options for the number of epochs
+  resnet_model:
+    values: ["resnet18", "resnet50"]  # Test different ResNet variants
+# count = 10 to limit the training to a certain number of runs
+
+

@@ -1,9 +1,0 @@
-hyperparameters:
-  lr: 0.001
-  batch_size: 32
-  epochs: 10
-  model_save_path: models/resnet_model.pth
-  figure_save_path: reports/figures/resnet_training_statistics.png
-  model_params:
-    num_classes: 120
-    resnet_model: resnet50
