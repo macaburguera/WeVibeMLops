@@ -12,7 +12,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 PARAMS = {
     "lr": 1e-4,
     "batch_size": 32,
-    "epochs": 15,
+    "epochs": 5,
     "processed_data_dir": "data/processed",
     "model_save_path": "models/resnet_model.pth",
     "figure_save_path": "reports/figures/resnet_training_statistics.png",

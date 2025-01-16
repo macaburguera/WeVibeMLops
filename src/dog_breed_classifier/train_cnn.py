@@ -25,8 +25,8 @@ def train():
 
     # Load datasets
     def load_dataset(subset, data_dir):
-        images = torch.load(os.path.join(data_dir, subset, f"{subset}_images.pt"))
-        targets = torch.load(os.path.join(data_dir, subset, f"{subset}_targets.pt"))
+        images = torch.load(os.path.join(data_dir, f"{subset}_images.pt"))
+        targets = torch.load(os.path.join(data_dir, f"{subset}_targets.pt"))
         return TensorDataset(images, targets)
 
     train_dataset = load_dataset("train", PARAMS["processed_data_dir"])
