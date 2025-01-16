@@ -31,12 +31,13 @@ After setting up the environment, run `data.py` to process the data from the sou
 ```bash
 python src/dog_breed_classifier/data.py
 ```
+That will download the original dataset, preprocess it and save the train, test and validation datasets in the /data folder.
 
 ---
 
 ### Running Training Sessions
 
-#### Train All Models at Once
+#### Building from scratch
 In Linux, Git Bash, or WSL, you can build both the processed dataset and the model by running
 ```bash
 chmod +x run_all.sh
@@ -57,15 +58,14 @@ python src/dog_breed_classifier/train_resnet.py --wandb
 ```
 
 #### Parameter sweep
-To train a model on a specific configuration, run
 We provide another training script for running hyperparameter sweeps through wandb.
-The config file with the setup can be found at /config/sweep.yaml.
+The config file with the setup can be found at /configs/sweep.yaml.
 To run this session:
 
 ```bash
 python src/dog_breed_classifier/train_resnet_sweep.py sweep
 ```
-You'll find the hyperparameters for a single training session in /config/config.yaml
+You'll find the hyperparameters for a single training session in /configs/config.yaml.
 
 
 ### Updating `requirements.txt`
