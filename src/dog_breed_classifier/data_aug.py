@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from PIL import Image
 from albumentations import (
     HorizontalFlip, Rotate, Normalize, Resize, CLAHE,
-    RandomBrightnessContrast, GaussNoise, ShiftScaleRotate, OneOf, Compose
+    RandomBrightnessContrast, GaussNoise, Affine, OneOf, Compose
 )
 from albumentations.pytorch import ToTensorV2
 import typer
@@ -36,20 +36,19 @@ def albumentations_transformations(image_size=(224, 224)):
         OneOf([
             HorizontalFlip(p=1.0),
             Rotate(limit=30, p=1.0),
-            ShiftScaleRotate(shift_limit=0.05, scale_limit=0.05, rotate_limit=15, p=1.0),
+            Affine(scale=(0.95, 1.05), translate_percent=(0.05, 0.05), rotate=(-15, 15), shear=(-5, 5), p=1.0),
         ], p=0.8),
         OneOf([
             CLAHE(clip_limit=4.0, tile_grid_size=(8, 8), p=1.0),
             RandomBrightnessContrast(p=1.0),
-            GaussNoise(var_limit=(10, 50), p=1.0),
+            GaussNoise(p=1.0),
         ], p=0.8),
         Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
     ])
 
-def preprocess_images_in_batches(images_dir: str, labels: pd.DataFrame, transform, batch_size: int, output_dir: str):
+def preprocess_images_in_batches(images_dir: str, labels: pd.DataFrame, transform, batch_size: int):
     """Preprocess images in smaller batches to avoid memory overload."""
-    os.makedirs(output_dir, exist_ok=True)
 
     def image_generator():
         for _, row in labels.iterrows():
@@ -63,41 +62,24 @@ def preprocess_images_in_batches(images_dir: str, labels: pd.DataFrame, transfor
                 print(f"Image {img_path} not found. Skipping...")
                 continue
 
-    batch_count = 0
-    buffer_images, buffer_targets = [], []
+    batch_images, batch_targets = [], []
 
     for image, target in image_generator():
         augmented_image = transform(image=image)['image']
-        buffer_images.append(augmented_image)
-        buffer_targets.append(target)
+        batch_images.append(augmented_image)
+        batch_targets.append(target)
 
-        if len(buffer_images) == batch_size:
-            save_batch(buffer_images, buffer_targets, output_dir, batch_count)
-            buffer_images, buffer_targets = [], []
-            batch_count += 1
+        if len(batch_images) == batch_size:
+            yield torch.stack(batch_images), torch.tensor(batch_targets, dtype=torch.long)
+            batch_images, batch_targets = [], []
 
-    if buffer_images:
-        save_batch(buffer_images, buffer_targets, output_dir, batch_count)
+    if batch_images:
+        yield torch.stack(batch_images), torch.tensor(batch_targets, dtype=torch.long)
 
-def save_batch(images, targets, output_dir, batch_count):
-    """Save a batch to a file."""
-    batch_path = os.path.join(output_dir, f"batch_{batch_count}.pt")
-    torch.save((torch.stack(images), torch.tensor(targets, dtype=torch.long)), batch_path)
-    print(f"Saved batch {batch_count} to {batch_path}")
-
-def combine_batches_and_save(batch_dir: str, output_images_path: str, output_targets_path: str):
-    """Combine all batches without overloading memory."""
-    all_images, all_targets = [], []
-
-    for batch_file in sorted(os.listdir(batch_dir)):
-        if batch_file.endswith(".pt"):
-            batch_path = os.path.join(batch_dir, batch_file)
-            images, targets = torch.load(batch_path)
-            all_images.append(images)
-            all_targets.append(targets)
-
-    combined_images = torch.cat(all_images, dim=0)
-    combined_targets = torch.cat(all_targets, dim=0)
+def combine_batches_and_save(image_batches, target_batches, output_images_path, output_targets_path):
+    """Combine all batches and save them to disk."""
+    combined_images = torch.cat(image_batches, dim=0)
+    combined_targets = torch.cat(target_batches, dim=0)
 
     torch.save(combined_images, output_images_path)
     torch.save(combined_targets, output_targets_path)
@@ -106,6 +88,9 @@ def combine_batches_and_save(batch_dir: str, output_images_path: str, output_tar
     print(f"Saved combined targets to {output_targets_path}")
 
 def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224), batch_size=100):
+    os.makedirs(os.path.join(processed_data_dir, "train"), exist_ok=True)
+    os.makedirs(os.path.join(processed_data_dir, "validation"), exist_ok=True)
+    os.makedirs(os.path.join(processed_data_dir, "test"), exist_ok=True)
     """Split data into train/validation/test and process it."""
     labels_path = os.path.join(raw_data_dir, "labels.csv")
     images_dir = os.path.join(raw_data_dir, "images")
@@ -120,19 +105,35 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
 
     transform = albumentations_transformations(image_size=image_size)
 
-    preprocess_images_in_batches(images_dir, train_labels, transform, batch_size, os.path.join(processed_data_dir, "train"))
-    preprocess_images_in_batches(images_dir, val_labels, transform, batch_size, os.path.join(processed_data_dir, "validation"))
-    preprocess_images_in_batches(images_dir, test_labels, transform, batch_size, os.path.join(processed_data_dir, "test"))
+    # Process and combine train data
+    train_image_batches, train_target_batches = [], []
+    for images, targets in preprocess_images_in_batches(images_dir, train_labels, transform, batch_size):
+        train_image_batches.append(images)
+        train_target_batches.append(targets)
 
-    combine_batches_and_save(os.path.join(processed_data_dir, "train"),
-                             os.path.join(processed_data_dir, "train_images.pt"),
-                             os.path.join(processed_data_dir, "train_targets.pt"))
-    combine_batches_and_save(os.path.join(processed_data_dir, "validation"),
-                             os.path.join(processed_data_dir, "validation_images.pt"),
-                             os.path.join(processed_data_dir, "validation_targets.pt"))
-    combine_batches_and_save(os.path.join(processed_data_dir, "test"),
-                             os.path.join(processed_data_dir, "test_images.pt"),
-                             os.path.join(processed_data_dir, "test_targets.pt"))
+    combine_batches_and_save(train_image_batches, train_target_batches,
+                             os.path.join(processed_data_dir, "train", "train_images.pt"),
+                             os.path.join(processed_data_dir, "train", "train_targets.pt"))
+
+    # Process and combine validation data
+    val_image_batches, val_target_batches = [], []
+    for images, targets in preprocess_images_in_batches(images_dir, val_labels, transform, batch_size):
+        val_image_batches.append(images)
+        val_target_batches.append(targets)
+
+    combine_batches_and_save(val_image_batches, val_target_batches,
+                             os.path.join(processed_data_dir, "validation", "validation_images.pt"),
+                             os.path.join(processed_data_dir, "validation", "validation_targets.pt"))
+
+    # Process and combine test data
+    test_image_batches, test_target_batches = [], []
+    for images, targets in preprocess_images_in_batches(images_dir, test_labels, transform, batch_size):
+        test_image_batches.append(images)
+        test_target_batches.append(targets)
+
+    combine_batches_and_save(test_image_batches, test_target_batches,
+                             os.path.join(processed_data_dir, "test", "test_images.pt"),
+                             os.path.join(processed_data_dir, "test", "test_targets.pt"))
 
 def main(gdrive_link: str = "", raw_data_dir: str = "data/raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
     """Complete process: download, split, process, and save datasets."""
