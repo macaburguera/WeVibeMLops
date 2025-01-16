@@ -17,9 +17,18 @@ processed_data_dir = to_absolute_path("data/processed")
 # Typer app
 app = typer.Typer()
 
+def ensure_directory_exists(directory_path: str):
+    """Ensure a directory exists, create it if it doesn't."""
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+
 def train(cfg: DictConfig, use_wandb: bool):
     print("Starting training with SimpleResNetClassifier...")
     print(f"{cfg.hyperparameters.lr=}, {cfg.hyperparameters.batch_size=}, {cfg.hyperparameters.epochs=}")
+
+    # Ensure directories for saving model and figures exist
+    ensure_directory_exists(os.path.dirname(cfg.hyperparameters.model_save_path))
+    ensure_directory_exists(os.path.dirname(cfg.hyperparameters.figure_save_path))
 
     # Initialize wandb if activated
     if use_wandb:
@@ -119,7 +128,6 @@ def train(cfg: DictConfig, use_wandb: bool):
             })
 
     # Save model
-    os.makedirs(os.path.dirname(cfg.hyperparameters.model_save_path), exist_ok=True)
     torch.save(model.state_dict(), cfg.hyperparameters.model_save_path)
 
     # Save training statistics

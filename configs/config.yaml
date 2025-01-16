@@ -1,6 +1,6 @@
 hyperparameters:
   lr: 1e-2
-  batch_size: 32
+  batch_size: 16
   epochs: 10
   model_save_path: models/resnet_model.pth
   figure_save_path: reports/figures/resnet_training_statistics.png

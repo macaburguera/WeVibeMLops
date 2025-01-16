@@ -26,10 +26,10 @@
 
 ### Setting Up the Data
 
-After setting up the environment, run `data.py` or `data_aug.py` (for data augmentation) to process the data from the source:
+After setting up the environment, run `data.py` to process the data from the source:
 
 ```bash
-python src/dog_breed_classifier/data_aug.py
+python src/dog_breed_classifier/data.py
 ```
 
 ---
@@ -37,23 +37,36 @@ python src/dog_breed_classifier/data_aug.py
 ### Running Training Sessions
 
 #### Train All Models at Once
-In Linux, Git Bash, or WSL, you can train all models by running the following commands:
+In Linux, Git Bash, or WSL, you can build both the processed dataset and the model by running
 ```bash
-chmod +x train_all.sh
-./train_all.sh
+chmod +x run_all.sh
+./run_all.sh
 ```
 
-#### Train Each Model Individually
-To train a specific model, run:
+#### Train A Model Individually
+To train a model on a specific configuration, run
 ```bash
-python src/dog_breed_classifier/train_xxx.py
+python src/dog_breed_classifier/train_resnet.py
 ```
-Replace `xxx` with one of the following:  
-- `cnn`  
-- `dino`  
-- `resnet`
+You'll find the hyperparameters for a single training session in /config/config.yaml
 
----
+To do the training with wandb, run it with the flag --wandb
+
+```bash
+python src/dog_breed_classifier/train_resnet.py --wandb
+```
+
+#### Parameter sweep
+To train a model on a specific configuration, run
+We provide another training script for running hyperparameter sweeps through wandb.
+The config file with the setup can be found at /config/sweep.yaml.
+To run this session:
+
+```bash
+python src/dog_breed_classifier/train_resnet_sweep.py sweep
+```
+You'll find the hyperparameters for a single training session in /config/config.yaml
+
 
 ### Updating `requirements.txt`
 
