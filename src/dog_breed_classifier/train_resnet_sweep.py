@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from model_resnet import SimpleResNetClassifier
 import typer
 import wandb
+import yaml
 
 # Device configuration
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -17,18 +18,16 @@ processed_data_dir = to_absolute_path("data/processed")
 # Typer app
 app = typer.Typer()
 
-def ensure_directory_exists(directory_path: str):
-    """Ensure a directory exists, create it if it doesn't."""
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
-
-def train(cfg: DictConfig, use_wandb: bool):
+def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
     print("Starting training with SimpleResNetClassifier...")
-    print(f"{cfg.hyperparameters.lr=}, {cfg.hyperparameters.batch_size=}, {cfg.hyperparameters.epochs=}")
 
-    # Ensure directories for saving model and figures exist
-    ensure_directory_exists(os.path.dirname(cfg.hyperparameters.model_save_path))
-    ensure_directory_exists(os.path.dirname(cfg.hyperparameters.figure_save_path))
+    # Override hyperparameters from wandb sweep
+    if override_hyperparams:
+        cfg.hyperparameters.lr = override_hyperparams["learning_rate"]
+        cfg.hyperparameters.batch_size = override_hyperparams["batch_size"]
+        cfg.hyperparameters.epochs = override_hyperparams["epochs"]
+
+    print(f"{cfg.hyperparameters.lr=}, {cfg.hyperparameters.batch_size=}, {cfg.hyperparameters.epochs=}")
 
     # Initialize wandb if activated
     if use_wandb:
@@ -69,7 +68,6 @@ def train(cfg: DictConfig, use_wandb: bool):
     optimizer = torch.optim.SGD(model.parameters(), lr=cfg.hyperparameters.lr, momentum=0.9)
 
     # Training loop
-    statistics = {"train_loss": [], "val_loss": [], "train_accuracy": [], "val_accuracy": []}
     for epoch in range(cfg.hyperparameters.epochs):
         model.train()
         train_loss = 0
@@ -108,13 +106,6 @@ def train(cfg: DictConfig, use_wandb: bool):
 
         val_accuracy = correct_val / total_val
 
-        train_loss /= len(train_loader)
-        val_loss /= len(val_loader)
-        statistics["train_loss"].append(train_loss)
-        statistics["val_loss"].append(val_loss)
-        statistics["train_accuracy"].append(train_accuracy)
-        statistics["val_accuracy"].append(val_accuracy)
-
         print(f"Epoch {epoch+1}/{cfg.hyperparameters.epochs}: Train Loss={train_loss:.4f}, Val Loss={val_loss:.4f}, Train Acc={train_accuracy:.4f}, Val Acc={val_accuracy:.4f}")
 
         # Log metrics to wandb
@@ -127,33 +118,45 @@ def train(cfg: DictConfig, use_wandb: bool):
                 "val_accuracy": val_accuracy,
             })
 
-    # Save model
-    torch.save(model.state_dict(), cfg.hyperparameters.model_save_path)
-
-    # Save training statistics
-    plt.figure()
-    plt.plot(statistics["train_loss"], label="Train Loss")
-    plt.plot(statistics["val_loss"], label="Validation Loss")
-    plt.legend()
-    plt.savefig(cfg.hyperparameters.figure_save_path.replace("statistics", "loss"))
-
-    plt.figure()
-    plt.plot(statistics["train_accuracy"], label="Train Accuracy")
-    plt.plot(statistics["val_accuracy"], label="Validation Accuracy")
-    plt.legend()
-    plt.savefig(cfg.hyperparameters.figure_save_path.replace("statistics", "accuracy"))
-
-    print(f"Training statistics saved to {cfg.hyperparameters.figure_save_path}")
-
     # Finish wandb session
     if use_wandb:
         wandb.finish()
 
 @app.command()
-def main(wandb: bool = typer.Option(False, help="Enable Weights & Biases for logging")):
+def main(wandb_flag: bool = typer.Option(False, help="Enable Weights & Biases for logging")):
     with hydra.initialize(config_path="../../configs"):
         cfg = hydra.compose(config_name="config")
-        train(cfg, use_wandb=wandb)
+        train(cfg, use_wandb=wandb_flag)
+
+@app.command()
+def sweep():
+    """
+    Run a Wandb hyperparameter sweep.
+    """
+    sweep_config_path = to_absolute_path("configs/sweep.yaml")
+
+    # Ensure the sweep file exists
+    if not os.path.exists(sweep_config_path):
+        raise FileNotFoundError(f"Could not find sweep configuration file at {sweep_config_path}")
+
+    with open(sweep_config_path, "r") as f:
+        sweep_config = yaml.safe_load(f)
+
+    # Initialize the sweep
+    sweep_id = wandb.sweep(sweep_config, project="dog-breed-classifier")
+
+    def sweep_train():
+        # Use a relative path for Hydra's config path
+        with hydra.initialize(config_path="../../configs"):  # Use relative path
+            cfg = hydra.compose(config_name="config")
+            wandb.init()
+            train(cfg, use_wandb=True)
+
+
+
+    wandb.agent(sweep_id, function=sweep_train)
+
+
 
 
 if __name__ == "__main__":

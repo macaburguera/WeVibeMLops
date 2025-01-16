@@ -5,8 +5,13 @@ import zipfile
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
 from PIL import Image
+from albumentations import (
+    HorizontalFlip, Rotate, Normalize, Resize, CLAHE,
+    RandomBrightnessContrast, GaussNoise, Affine, OneOf, Compose
+)
+from albumentations.pytorch import ToTensorV2
 import typer
-
+import numpy as np
 
 def download_data(gdrive_link: str, raw_data_dir: str):
     """Download the dataset from Google Drive and save it to the specified directory."""
@@ -24,96 +29,119 @@ def download_data(gdrive_link: str, raw_data_dir: str):
         print(f"Decompressed images.zip to {os.path.join(raw_data_dir, 'images')}")
         os.remove(zip_path)  # Optionally remove the zip file after extraction
 
+def albumentations_transformations(image_size=(224, 224)):
+    """Define transformations with augmentations."""
+    return Compose([
+        Resize(height=image_size[0], width=image_size[1]),
+        OneOf([
+            HorizontalFlip(p=1.0),
+            Rotate(limit=30, p=1.0),
+            Affine(scale=(0.95, 1.05), translate_percent=(0.05, 0.05), rotate=(-15, 15), shear=(-5, 5), p=1.0),
+        ], p=0.8),
+        OneOf([
+            CLAHE(clip_limit=4.0, tile_grid_size=(8, 8), p=1.0),
+            RandomBrightnessContrast(p=1.0),
+            GaussNoise(p=1.0),
+        ], p=0.8),
+        Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2(),
+    ])
 
-def preprocess_images(images_dir: str, labels: pd.DataFrame, transform):
-    """Preprocess images by applying resizing and normalization."""
-    image_tensors = []
-    targets = []
-    for _, row in labels.iterrows():
-        img_id = row['id']
-        breed = row['breed']
-        img_path = os.path.join(images_dir, f"{img_id}.jpg")
-        
-        try:
-            image = Image.open(img_path).convert("RGB")
-        except FileNotFoundError:
-            print(f"Image {img_path} not found. Skipping...")
-            continue
+def preprocess_images_in_batches(images_dir: str, labels: pd.DataFrame, transform, batch_size: int):
+    """Preprocess images in smaller batches to avoid memory overload."""
 
-        image = transform(image)
-        image_tensors.append(image)
-        targets.append(breed)
-    
-    return torch.stack(image_tensors), torch.tensor(targets)
+    def image_generator():
+        for _, row in labels.iterrows():
+            img_id = row['id']
+            breed = row['breed']
+            img_path = os.path.join(images_dir, f"{img_id}.jpg")
+            try:
+                image = Image.open(img_path).convert("RGB")
+                yield np.array(image), breed
+            except FileNotFoundError:
+                print(f"Image {img_path} not found. Skipping...")
+                continue
 
+    batch_images, batch_targets = [], []
 
-def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)):
-    """Split the data into train, validation, and test sets and save them."""
-    # Paths
+    for image, target in image_generator():
+        augmented_image = transform(image=image)['image']
+        batch_images.append(augmented_image)
+        batch_targets.append(target)
+
+        if len(batch_images) == batch_size:
+            yield torch.stack(batch_images), torch.tensor(batch_targets, dtype=torch.long)
+            batch_images, batch_targets = [], []
+
+    if batch_images:
+        yield torch.stack(batch_images), torch.tensor(batch_targets, dtype=torch.long)
+
+def combine_batches_and_save(image_batches, target_batches, output_images_path, output_targets_path):
+    """Combine all batches and save them to disk."""
+    combined_images = torch.cat(image_batches, dim=0)
+    combined_targets = torch.cat(target_batches, dim=0)
+
+    torch.save(combined_images, output_images_path)
+    torch.save(combined_targets, output_targets_path)
+
+    print(f"Saved combined images to {output_images_path}")
+    print(f"Saved combined targets to {output_targets_path}")
+
+def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224), batch_size=100):
+    os.makedirs(os.path.join(processed_data_dir, "train"), exist_ok=True)
+    os.makedirs(os.path.join(processed_data_dir, "validation"), exist_ok=True)
+    os.makedirs(os.path.join(processed_data_dir, "test"), exist_ok=True)
+    """Split data into train/validation/test and process it."""
     labels_path = os.path.join(raw_data_dir, "labels.csv")
     images_dir = os.path.join(raw_data_dir, "images")
-    print("loaded paths")
-    
+
     # Load labels
     labels = pd.read_csv(labels_path)
-    print("Loaded labels")
-    
-    # Encode breeds as integers
     labels['breed'] = labels['breed'].astype('category').cat.codes
-    
-    # Split into train, test, and validation sets
+
+    # Split into train, validation, and test sets
     train_labels, temp_labels = train_test_split(labels, test_size=0.3, stratify=labels['breed'], random_state=42)
     val_labels, test_labels = train_test_split(temp_labels, test_size=0.5, stratify=temp_labels['breed'], random_state=42)
-    print("data split")
-    
-    # Define transformations
-    transform = transforms.Compose([
-        transforms.Resize(image_size),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-    ])
-    print("transform defined")
-    
-    # Preprocess images
-    train_images, train_targets = preprocess_images(images_dir, train_labels, transform)
-    print("train images preprocessed")
-    val_images, val_targets = preprocess_images(images_dir, val_labels, transform)
-    print("val images preprocessed")
-    test_images, test_targets = preprocess_images(images_dir, test_labels, transform)
-    print("test images preprocessed")
-    
-    # Save data to .pt files
-    subsets = {
-        "train": (train_images, train_targets),
-        "validation": (val_images, val_targets),
-        "test": (test_images, test_targets)
-    }
-    for subset_name, (images, targets) in subsets.items():
-        subset_dir = os.path.join(processed_data_dir, subset_name)
-        os.makedirs(subset_dir, exist_ok=True)
-        torch.save(images, os.path.join(subset_dir, f"{subset_name}_images.pt"))
-        torch.save(targets, os.path.join(subset_dir, f"{subset_name}_targets.pt"))
-        print(f"Saved {subset_name} set to {subset_dir}")
 
+    transform = albumentations_transformations(image_size=image_size)
 
-def main(
-    gdrive_link: str = "https://drive.google.com/drive/folders/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0?usp=sharing",  # Default Google Drive link
-    raw_data_dir: str = "data/raw",                   # Default raw data folder
-    processed_data_dir: str = "data/processed",       # Default processed data folder
-    image_size: str = "224,224"                       # Default image size as a string
-):
-    """
-    Download data from Google Drive, split it, and save processed subsets.
-    """
-    # Parse image_size string into a tuple of integers
-    image_size = tuple(map(int, image_size.split(',')))
-    
-    # Step 1: Download data
-    download_data(gdrive_link, raw_data_dir)
+    # Process and combine train data
+    train_image_batches, train_target_batches = [], []
+    for images, targets in preprocess_images_in_batches(images_dir, train_labels, transform, batch_size):
+        train_image_batches.append(images)
+        train_target_batches.append(targets)
 
-    # Step 2: Split, process, and save data
-    split_data(raw_data_dir, processed_data_dir, image_size=image_size)
+    combine_batches_and_save(train_image_batches, train_target_batches,
+                             os.path.join(processed_data_dir, "train", "train_images.pt"),
+                             os.path.join(processed_data_dir, "train", "train_targets.pt"))
 
+    # Process and combine validation data
+    val_image_batches, val_target_batches = [], []
+    for images, targets in preprocess_images_in_batches(images_dir, val_labels, transform, batch_size):
+        val_image_batches.append(images)
+        val_target_batches.append(targets)
+
+    combine_batches_and_save(val_image_batches, val_target_batches,
+                             os.path.join(processed_data_dir, "validation", "validation_images.pt"),
+                             os.path.join(processed_data_dir, "validation", "validation_targets.pt"))
+
+    # Process and combine test data
+    test_image_batches, test_target_batches = [], []
+    for images, targets in preprocess_images_in_batches(images_dir, test_labels, transform, batch_size):
+        test_image_batches.append(images)
+        test_target_batches.append(targets)
+
+    combine_batches_and_save(test_image_batches, test_target_batches,
+                             os.path.join(processed_data_dir, "test", "test_images.pt"),
+                             os.path.join(processed_data_dir, "test", "test_targets.pt"))
+
+def main(gdrive_link: str = "", raw_data_dir: str = "data/raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
+    """Complete process: download, split, process, and save datasets."""
+    gdrive_link = False
+    if gdrive_link:
+        download_data(gdrive_link, raw_data_dir)
+
+    split_data(raw_data_dir, processed_data_dir, batch_size=batch_size)
 
 if __name__ == "__main__":
     typer.run(main)
