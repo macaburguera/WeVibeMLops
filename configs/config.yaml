@@ -3,7 +3,8 @@ hyperparameters:
   batch_size: 16
   epochs: 10
   model_save_path: models/resnet_model.pth
-  figure_save_path: reports/figures/resnet_training_statistics.png
+  figure_save_path: reports/figures
+  processed_data_dir: data/processed
   model_params:
     num_classes: 120
     resnet_model: resnet50

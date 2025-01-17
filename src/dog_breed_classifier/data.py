@@ -67,17 +67,24 @@ def preprocess_images_in_batches(images_dir: str, labels: pd.DataFrame, transfor
     for image, target in image_generator():
         augmented_image = transform(image=image)['image']
         batch_images.append(augmented_image)
-        batch_targets.append(target)
+        batch_targets.append(int(target))  # Convert target to integer before appending
 
         if len(batch_images) == batch_size:
             yield torch.stack(batch_images), torch.tensor(batch_targets, dtype=torch.long)
+            # Re-initialize after yielding
             batch_images, batch_targets = [], []
 
+    # Yield remaining images and targets if any
     if batch_images:
         yield torch.stack(batch_images), torch.tensor(batch_targets, dtype=torch.long)
 
+
 def combine_batches_and_save(image_batches, target_batches, output_images_path, output_targets_path):
     """Combine all batches and save them to disk."""
+    if not image_batches or not target_batches:
+        print(f"Warning: No batches to combine for {output_images_path} and {output_targets_path}.")
+        return
+
     combined_images = torch.cat(image_batches, dim=0)
     combined_targets = torch.cat(target_batches, dim=0)
 
@@ -87,17 +94,30 @@ def combine_batches_and_save(image_batches, target_batches, output_images_path, 
     print(f"Saved combined images to {output_images_path}")
     print(f"Saved combined targets to {output_targets_path}")
 
+
 def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224), batch_size=100):
+    """Split data into train/validation/test and process it."""
     os.makedirs(os.path.join(processed_data_dir, "train"), exist_ok=True)
     os.makedirs(os.path.join(processed_data_dir, "validation"), exist_ok=True)
     os.makedirs(os.path.join(processed_data_dir, "test"), exist_ok=True)
-    """Split data into train/validation/test and process it."""
+
     labels_path = os.path.join(raw_data_dir, "labels.csv")
     images_dir = os.path.join(raw_data_dir, "images")
 
     # Load labels
     labels = pd.read_csv(labels_path)
-    labels['breed'] = labels['breed'].astype('category').cat.codes
+    labels['breed'] = labels['breed'].astype('category').cat.codes  # Encode breeds as numeric values
+
+        # Debug: Check for invalid labels
+    num_classes = labels['breed'].nunique()
+    assert labels['breed'].min() >= 0, "Labels must be >= 0"
+    assert labels['breed'].max() < num_classes, f"Labels must be < {num_classes}"
+
+
+    # Check for minimum class size
+    min_class_size = labels['breed'].value_counts().min()
+    if min_class_size < 2:
+        raise ValueError(f"Each class must have at least 2 samples. Found minimum class size: {min_class_size}.")
 
     # Split into train, validation, and test sets
     train_labels, temp_labels = train_test_split(labels, test_size=0.3, stratify=labels['breed'], random_state=42)
@@ -134,6 +154,7 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
     combine_batches_and_save(test_image_batches, test_target_batches,
                              os.path.join(processed_data_dir, "test", "test_images.pt"),
                              os.path.join(processed_data_dir, "test", "test_targets.pt"))
+
 
 def main(gdrive_link: str = "", raw_data_dir: str = "data/raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
     """Complete process: download, split, process, and save datasets."""
