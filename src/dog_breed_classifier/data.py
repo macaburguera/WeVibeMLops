@@ -156,9 +156,14 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
                              os.path.join(processed_data_dir, "test", "test_targets.pt"))
 
 
+
+
 def main(gdrive_link: str = "", raw_data_dir: str = "data/raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
     """Complete process: download, split, process, and save datasets."""
-   # gdrive_link = False
+    # Ensure raw_data_dir and processed_data_dir exist
+    os.makedirs(raw_data_dir, exist_ok=True)
+    os.makedirs(processed_data_dir, exist_ok=True)
+
     if gdrive_link:
         download_data(gdrive_link, raw_data_dir)
 
