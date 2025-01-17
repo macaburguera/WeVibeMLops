@@ -37,8 +37,10 @@ jobs:
           fi
           pip install --upgrade pip
           pip install -r requirements.txt
+          pip install -r requirements_dev.txt
           pip install tomli
           pip install coverage
+          pip install pytest
           pip install -e .
           pip list
         shell: bash  # Ensures the script uses bash on all platforms
