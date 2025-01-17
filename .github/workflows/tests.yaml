@@ -49,6 +49,8 @@ jobs:
         run: |
           mkdir -p data/processed/train
           mkdir -p data/processed/validation
+          rm -rf .pytest_cache
+
         shell: bash  # Ensures the script uses bash on all platforms
 
 
