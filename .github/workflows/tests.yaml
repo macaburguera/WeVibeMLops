@@ -37,6 +37,7 @@ jobs:
           fi
           pip install --upgrade pip
           pip install -r requirements.txt
+          pip install tomli
           pip install coverage
           pip install -e .
           pip list
