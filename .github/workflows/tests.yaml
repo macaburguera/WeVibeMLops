@@ -57,6 +57,16 @@ jobs:
           coverage run -m pytest tests/
           coverage report -m
 
+      - name: Verify coverage file
+        run: |
+          if [ ! -f .coverage ]; then
+            echo "Error: .coverage file not found!"
+            exit 1
+          else
+            echo "Coverage file found."
+          fi
+
+
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v3
