@@ -10,7 +10,6 @@ if not os.path.exists(_PROJECT_ROOT):
 if not os.path.exists(_PATH_DATA):
     raise RuntimeError(f"Data folder not found: {_PATH_DATA}")
 
-
 # Helper function to get paths
 def get_test_paths():
     """Return important paths for the test suite."""

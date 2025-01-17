@@ -13,7 +13,6 @@ from PIL import Image
 # Mock the device configuration
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
 @pytest.fixture(scope="session")
 def mock_config():
     return {
@@ -28,7 +27,6 @@ def mock_config():
         }
     }
 
-
 @pytest.fixture(scope="session", autouse=True)
 def create_mock_files(mock_config):
     """
@@ -40,33 +38,15 @@ def create_mock_files(mock_config):
 
     # Generate train data
     train_images = torch.randn(300, 3, 224, 224)  # Example: 300 images
-    train_targets = torch.randint(
-        0,
-        mock_config["hyperparameters"]["model_params"]["num_classes"],
-        (300,),
-    )
-    torch.save(
-        train_images, os.path.join(base_dir, "train", "train_images.pt")
-    )
-    torch.save(
-        train_targets, os.path.join(base_dir, "train", "train_targets.pt")
-    )
+    train_targets = torch.randint(0, mock_config["hyperparameters"]["model_params"]["num_classes"], (300,))
+    torch.save(train_images, os.path.join(base_dir, "train", "train_images.pt"))
+    torch.save(train_targets, os.path.join(base_dir, "train", "train_targets.pt"))
 
     # Generate validation data
     val_images = torch.randn(100, 3, 224, 224)  # Example: 100 images
-    val_targets = torch.randint(
-        0,
-        mock_config["hyperparameters"]["model_params"]["num_classes"],
-        (100,),
-    )
-    torch.save(
-        val_images,
-        os.path.join(base_dir, "validation", "validation_images.pt"),
-    )
-    torch.save(
-        val_targets,
-        os.path.join(base_dir, "validation", "validation_targets.pt"),
-    )
+    val_targets = torch.randint(0, mock_config["hyperparameters"]["model_params"]["num_classes"], (100,))
+    torch.save(val_images, os.path.join(base_dir, "validation", "validation_images.pt"))
+    torch.save(val_targets, os.path.join(base_dir, "validation", "validation_targets.pt"))
 
     yield  # Let tests run
 
@@ -85,7 +65,6 @@ def create_mock_files(mock_config):
                     os.remove(os.path.join(root, file))
                 os.rmdir(root)
 
-
 # Mock datasets
 @pytest.fixture
 def mock_datasets(mock_config):
@@ -95,20 +74,15 @@ def mock_datasets(mock_config):
     num_classes = mock_config["hyperparameters"]["model_params"]["num_classes"]
 
     train_data = torch.randn(num_samples, *num_features)
-    train_targets = torch.randint(
-        0, num_classes, (num_samples,), dtype=torch.long
-    )
+    train_targets = torch.randint(0, num_classes, (num_samples,), dtype=torch.long)
 
     val_data = torch.randn(num_samples, *num_features)
-    val_targets = torch.randint(
-        0, num_classes, (num_samples,), dtype=torch.long
-    )
+    val_targets = torch.randint(0, num_classes, (num_samples,), dtype=torch.long)
 
     train_dataset = TensorDataset(train_data, train_targets)
     val_dataset = TensorDataset(val_data, val_targets)
 
     return train_dataset, val_dataset
-
 
 # Mock data loader
 @pytest.fixture
@@ -116,25 +90,16 @@ def mock_data_loaders(mock_datasets, mock_config):
     train_dataset, val_dataset = mock_datasets
     batch_size = mock_config["hyperparameters"]["batch_size"]
 
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True
-    )
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader
 
-
 # Test model initialization
 def test_model_initialization(mock_config):
-    model = SimpleResNetClassifier(
-        mock_config["hyperparameters"]["model_params"]
-    )
+    model = SimpleResNetClassifier(mock_config["hyperparameters"]["model_params"])
     assert isinstance(model, SimpleResNetClassifier)
-    assert (
-        model.resnet_backbone.fc.out_features
-        == mock_config["hyperparameters"]["model_params"]["num_classes"]
-    )
-
+    assert model.resnet_backbone.fc.out_features == mock_config["hyperparameters"]["model_params"]["num_classes"]
 
 # Test dataset loading
 def test_dataset_loading(mock_config):
@@ -146,7 +111,7 @@ def test_dataset_loading(mock_config):
 
     labels_data = {
         "id": [f"img{i}" for i in range(1, 11)],
-        "breed": [i % num_classes for i in range(1, 11)],
+        "breed": [i % num_classes for i in range(1, 11)]
     }
     labels_df = pd.DataFrame(labels_data)
 
@@ -159,27 +124,16 @@ def test_dataset_loading(mock_config):
 
     transform = albumentations_transformations(image_size=image_size)
 
-    batches = list(
-        preprocess_images_in_batches(
-            images_dir, labels_df, transform, batch_size=batch_size
-        )
-    )
+    batches = list(preprocess_images_in_batches(images_dir, labels_df, transform, batch_size=batch_size))
     total_images = sum(batch[0].shape[0] for batch in batches)
 
-    assert total_images == len(
-        labels_df
-    ), "Mismatch in the number of images loaded"
-    assert all(
-        batch[1].max() < num_classes for batch in batches
-    ), "Labels exceed expected num_classes"
-    assert all(
-        batch[1].min() >= 0 for batch in batches
-    ), "Labels contain negative values"
+    assert total_images == len(labels_df), "Mismatch in the number of images loaded"
+    assert all(batch[1].max() < num_classes for batch in batches), "Labels exceed expected num_classes"
+    assert all(batch[1].min() >= 0 for batch in batches), "Labels contain negative values"
 
     for file in os.listdir(images_dir):
         os.remove(os.path.join(images_dir, file))
     os.rmdir(images_dir)
-
 
 # Mocking Hydra and wandb
 @patch("hydra.compose")
@@ -187,14 +141,7 @@ def test_dataset_loading(mock_config):
 @patch("wandb.init")
 @patch("wandb.log")
 @patch("wandb.finish")
-def test_training_loop(
-    mock_finish,
-    mock_log,
-    mock_init,
-    mock_initialize,
-    mock_compose,
-    mock_config,
-):
+def test_training_loop(mock_finish, mock_log, mock_init, mock_initialize, mock_compose, mock_config):
     """
     Test the training loop using mock configurations and mock datasets.
     """
@@ -217,12 +164,6 @@ def test_training_loop(
 
     # Verify the figure directory and files exist
     figure_dir = mock_config["hyperparameters"]["figure_save_path"]
-    assert os.path.isdir(
-        figure_dir
-    ), f"Figure directory {figure_dir} does not exist"
-    assert os.path.exists(
-        os.path.join(figure_dir, "training_loss.png")
-    ), "Loss plot not found"
-    assert os.path.exists(
-        os.path.join(figure_dir, "training_accuracy.png")
-    ), "Accuracy plot not found"
+    assert os.path.isdir(figure_dir), f"Figure directory {figure_dir} does not exist"
+    assert os.path.exists(os.path.join(figure_dir, "training_loss.png")), "Loss plot not found"
+    assert os.path.exists(os.path.join(figure_dir, "training_accuracy.png")), "Accuracy plot not found"
