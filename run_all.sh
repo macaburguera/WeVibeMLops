@@ -21,7 +21,7 @@ run_and_check() {
 }
 
 # Run scripts in sequence
-#run_and_check "python src/dog_breed_classifier/data.py"
+run_and_check "python src/dog_breed_classifier/data.py"
 run_and_check "python -u src/dog_breed_classifier/model_resnet.py"
 run_and_check "python -u src/dog_breed_classifier/train_resnet.py"
 

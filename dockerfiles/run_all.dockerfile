@@ -1,5 +1,5 @@
 # Base image with CUDA and PyTorch
-FROM nvcr.io/nvidia/pytorch:22.07-py3 AS base
+FROM nvcr.io/nvidia/pytorch:24.10-py3 AS base
 
 # Install necessary tools and libraries
 RUN apt-get update && \
