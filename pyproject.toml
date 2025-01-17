@@ -32,9 +32,6 @@ dev = {file = ['requirements_dev.txt']}
 line-length = 120
 
 [tool.coverage.run]
-omit = ["tests/*"]
+source = ["src"]
+omit = ["*/tests/*"]  # Optional: exclude test files from coverage
 
-[run]
-omit = 
-    config.py
-    config-3.py
