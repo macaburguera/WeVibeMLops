@@ -1,4 +1,4 @@
-name: Unit Tests
+name: CI Workflow
 
 on:
   push:
@@ -9,7 +9,33 @@ on:
       - main
 
 jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install linting dependencies
+        run: |
+          pip install --upgrade pip
+          pip install flake8
+          pip install -r requirements_dev.txt
+
+      - name: Run flake8
+        run: |
+          echo "Running flake8 linting..."
+          flake8 src tests
+        shell: bash
+
   test:
+    name: Run Unit Tests
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
@@ -50,19 +76,15 @@ jobs:
           mkdir -p data/processed/train
           mkdir -p data/processed/validation
           rm -rf .pytest_cache
-
-        shell: bash  # Ensures the script uses bash on all platforms
-
+        shell: bash
 
       - name: Run tests & coverage
         run: |
           export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
           echo "PYTHONPATH set to ${PYTHONPATH}"
-          mkdir .coverage
           coverage run -m pytest tests/
           coverage report -m
         shell: bash
-
 
       - name: Verify coverage file
         run: |
@@ -74,7 +96,6 @@ jobs:
           fi
           find . -name "*.pyc" -delete
           find . -name "__pycache__" -delete
-
         shell: bash
 
       - name: Debug Coverage File
@@ -83,7 +104,6 @@ jobs:
           ls -la
           cat .coverage || echo "No .coverage file found"
         shell: bash
-
 
       - name: Upload coverage report
         if: always()
