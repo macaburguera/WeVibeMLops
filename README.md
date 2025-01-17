@@ -6,7 +6,7 @@
 
 1. **Create a Conda Environment**  
    ```bash
-   conda create --name dogs python=3.11
+   conda create --name dogs python=3.10
    conda activate dogs
    ```
    This project has been tested with PyTorch 2.2.0 and CUDA 11.8.
