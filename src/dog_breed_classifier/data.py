@@ -107,11 +107,10 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
     labels = pd.read_csv(labels_path)
     labels['breed'] = labels['breed'].astype('category').cat.codes  # Encode breeds as numeric values
 
-        # Debug: Check for invalid labels
+    # Debug: Check for invalid labels
     num_classes = labels['breed'].nunique()
     assert labels['breed'].min() >= 0, "Labels must be >= 0"
     assert labels['breed'].max() < num_classes, f"Labels must be < {num_classes}"
-
 
     # Check for minimum class size
     min_class_size = labels['breed'].value_counts().min()

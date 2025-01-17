@@ -1,5 +1,4 @@
 import os
-import torch
 import pytest
 from src.dog_breed_classifier.data import albumentations_transformations, preprocess_images_in_batches, split_data
 from PIL import Image
@@ -49,7 +48,6 @@ def test_preprocess_images_in_batches(mock_labels, mock_images):
     assert len(batches) == expected_batches, f"Expected {expected_batches} batches, but got {len(batches)}."
     assert batches[0][0].shape == (2, 3, 224, 224), "Each batch should have correct dimensions."
     assert batches[0][1].shape == (2,), "Batch targets should match batch size."
-
 
 
 def test_split_data(mock_labels, mock_images, tmp_path):
