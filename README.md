@@ -47,25 +47,23 @@ chmod +x run_all.sh
 #### Train A Model Individually
 To train a model on a specific configuration, run
 ```bash
-python src/dog_breed_classifier/train_resnet.py
+python src/dog_breed_classifier/train.py
 ```
 You'll find the hyperparameters for a single training session in /config/config.yaml
 
 To do the training with wandb, run it with the flag --wandb
 
 ```bash
-python src/dog_breed_classifier/train_resnet.py --wandb
+python src/dog_breed_classifier/train.py --wandb
 ```
 
 #### Parameter sweep
-We provide another training script for running hyperparameter sweeps through wandb.
 The config file with the setup can be found at /configs/sweep.yaml.
 To run this session:
 
 ```bash
-python src/dog_breed_classifier/train_resnet_sweep.py sweep
+python src/dog_breed_classifier/train.py sweep
 ```
-You'll find the hyperparameters for a single training session in /configs/config.yaml.
 
 
 ### Updating `requirements.txt`
@@ -79,6 +77,7 @@ To update the `requirements.txt` file based on your current environment:
    ```bash
    pipreqs . --force
    ```
+3. When installing from source, bear in mind that the pytorch version will differ depending on the available hardware, preferrably delete it from requirements.txt and install it as explained before.
 
 
 ## Overall Goal
