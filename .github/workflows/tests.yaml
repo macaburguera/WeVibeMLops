@@ -58,6 +58,7 @@ jobs:
         run: |
           export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
           echo "PYTHONPATH set to ${PYTHONPATH}"
+          mkdir .coverage
           coverage run -m pytest tests/
           coverage report -m
         shell: bash
