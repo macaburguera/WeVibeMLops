@@ -22,8 +22,8 @@ run_and_check() {
 
 # Run scripts in sequence
 run_and_check "python src/dog_breed_classifier/data.py"
-run_and_check "python -u src/dog_breed_classifier/model_resnet.py"
-run_and_check "python -u src/dog_breed_classifier/train_resnet.py"
+run_and_check "python -u src/dog_breed_classifier/model.py"
+run_and_check "python -u src/dog_breed_classifier/train.py"
 
 # Completion message
 echo "All scripts have finished running successfully." | tee -a $LOG_FILE
