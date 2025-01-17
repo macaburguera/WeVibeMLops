@@ -65,6 +65,10 @@ jobs:
           else
             echo "Coverage file found."
           fi
+          find . -name "*.pyc" -delete
+          find . -name "__pycache__" -delete
+
+        shell: bash
 
 
       - name: Upload coverage report
