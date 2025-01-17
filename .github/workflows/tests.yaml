@@ -37,7 +37,7 @@ jobs:
           fi
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e -
+          pip install -e .
           pip list
         shell: bash  # Ensures the script uses bash on all platforms
 
