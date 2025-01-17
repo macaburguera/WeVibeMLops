@@ -28,7 +28,9 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
         cfg.hyperparameters.batch_size = override_hyperparams["batch_size"]
         cfg.hyperparameters.epochs = override_hyperparams["epochs"]
 
-    print(f"{cfg.hyperparameters.lr=}, {cfg.hyperparameters.batch_size=}, {cfg.hyperparameters.epochs=}")
+    print(
+        f"{cfg.hyperparameters.lr=}, {cfg.hyperparameters.batch_size=}, {cfg.hyperparameters.epochs=}"
+    )
 
     if use_wandb:
         wandb.init(
@@ -47,26 +49,42 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
         targets_path = os.path.join(subset_dir, f"{subset}_targets.pt")
 
         if not os.path.exists(images_path) or not os.path.exists(targets_path):
-            raise FileNotFoundError(f"Expected files not found: {images_path} or {targets_path}")
+            raise FileNotFoundError(
+                f"Expected files not found: {images_path} or {targets_path}"
+            )
 
         images = torch.load(images_path)
         targets = torch.load(targets_path)
 
         num_classes = cfg.hyperparameters.model_params.num_classes
         if not ((targets >= 0).all() and (targets < num_classes).all()):
-            raise ValueError(f"Targets contain out-of-bound values: min={targets.min()}, max={targets.max()}")
+            raise ValueError(
+                f"Targets contain out-of-bound values: min={targets.min()}, max={targets.max()}"
+            )
 
         return TensorDataset(images, targets)
 
-    train_dataset = load_dataset("train", cfg.hyperparameters.processed_data_dir)
-    val_dataset = load_dataset("validation", cfg.hyperparameters.processed_data_dir)
+    train_dataset = load_dataset(
+        "train", cfg.hyperparameters.processed_data_dir
+    )
+    val_dataset = load_dataset(
+        "validation", cfg.hyperparameters.processed_data_dir
+    )
 
-    train_loader = DataLoader(train_dataset, batch_size=cfg.hyperparameters.batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=cfg.hyperparameters.batch_size, shuffle=False)
+    train_loader = DataLoader(
+        train_dataset, batch_size=cfg.hyperparameters.batch_size, shuffle=True
+    )
+    val_loader = DataLoader(
+        val_dataset, batch_size=cfg.hyperparameters.batch_size, shuffle=False
+    )
 
-    model = SimpleResNetClassifier(params=cfg.hyperparameters.model_params).to(DEVICE)
+    model = SimpleResNetClassifier(params=cfg.hyperparameters.model_params).to(
+        DEVICE
+    )
     loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=cfg.hyperparameters.lr, momentum=0.9)
+    optimizer = torch.optim.SGD(
+        model.parameters(), lr=cfg.hyperparameters.lr, momentum=0.9
+    )
 
     train_losses, val_losses = [], []
     train_accuracies, val_accuracies = [], []
@@ -104,16 +122,21 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
         val_losses.append(val_loss)
         val_accuracies.append(val_accuracy)
 
-        print(f"Epoch {epoch+1}/{cfg.hyperparameters.epochs}: Train Loss={train_loss:.4f}, Val Loss={val_loss:.4f}, Train Acc={train_accuracy:.4f}, Val Acc={val_accuracy:.4f}")
+        print(
+            f"Epoch {epoch+1}/{cfg.hyperparameters.epochs}: Train Loss={train_loss:.4f}, Val Loss={val_loss:.4f},
+            Train Acc={train_accuracy:.4f}, Val Acc={val_accuracy:.4f}"
+        )
 
         if use_wandb:
-            wandb.log({
-                "epoch": epoch + 1,
-                "train_loss": train_loss,
-                "val_loss": val_loss,
-                "train_accuracy": train_accuracy,
-                "val_accuracy": val_accuracy,
-            })
+            wandb.log(
+                {
+                    "epoch": epoch + 1,
+                    "train_loss": train_loss,
+                    "val_loss": val_loss,
+                    "train_accuracy": train_accuracy,
+                    "val_accuracy": val_accuracy,
+                }
+            )
 
     model_save_path = cfg.hyperparameters.model_save_path
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
@@ -126,8 +149,16 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
 
     # Loss plot
     plt.figure()
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), train_losses, label="Train Loss")
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), val_losses, label="Validation Loss")
+    plt.plot(
+        range(1, cfg.hyperparameters.epochs + 1),
+        train_losses,
+        label="Train Loss",
+    )
+    plt.plot(
+        range(1, cfg.hyperparameters.epochs + 1),
+        val_losses,
+        label="Validation Loss",
+    )
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend()
@@ -139,13 +170,23 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
 
     # Accuracy plot
     plt.figure()
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), train_accuracies, label="Train Accuracy")
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), val_accuracies, label="Validation Accuracy")
+    plt.plot(
+        range(1, cfg.hyperparameters.epochs + 1),
+        train_accuracies,
+        label="Train Accuracy",
+    )
+    plt.plot(
+        range(1, cfg.hyperparameters.epochs + 1),
+        val_accuracies,
+        label="Validation Accuracy",
+    )
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.legend()
     plt.title("Accuracy per Epoch")
-    accuracy_plot_path = os.path.join(figure_save_path, "training_accuracy.png")
+    accuracy_plot_path = os.path.join(
+        figure_save_path, "training_accuracy.png"
+    )
     plt.savefig(accuracy_plot_path)
     print(f"Accuracy plot saved to {accuracy_plot_path}")
     plt.close()
@@ -153,14 +194,24 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
     if use_wandb:
         wandb.finish()
 
+
 @app.callback(invoke_without_command=True)
-def default(ctx: typer.Context, wandb_flag: bool = typer.Option(False, help="Enable Weights & Biases for logging")):
+def default(
+    ctx: typer.Context,
+    wandb_flag: bool = typer.Option(
+        False, help="Enable Weights & Biases for logging"
+    ),
+):
     if ctx.invoked_subcommand is None:
         main(wandb_flag=wandb_flag)
 
 
 @app.command()
-def main(wandb_flag: bool = typer.Option(False, help="Enable Weights & Biases for logging")):
+def main(
+    wandb_flag: bool = typer.Option(
+        False, help="Enable Weights & Biases for logging"
+    )
+):
     with hydra.initialize(config_path="../../configs"):
         cfg = hydra.compose(config_name="config")
         train(cfg, use_wandb=wandb_flag)
@@ -171,7 +222,9 @@ def sweep():
     sweep_config_path = to_absolute_path("configs/sweep.yaml")
 
     if not os.path.exists(sweep_config_path):
-        raise FileNotFoundError(f"Could not find sweep configuration file at {sweep_config_path}")
+        raise FileNotFoundError(
+            f"Could not find sweep configuration file at {sweep_config_path}"
+        )
 
     with open(sweep_config_path, "r") as f:
         sweep_config = yaml.safe_load(f)

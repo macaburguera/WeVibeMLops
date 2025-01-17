@@ -31,7 +31,7 @@ jobs:
       - name: Run flake8
         run: |
           echo "Running flake8 linting..."
-          flake8 src tests
+          flake8 src tests --max-line-length=125
         shell: bash
 
   test:
