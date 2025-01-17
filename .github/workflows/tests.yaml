@@ -72,6 +72,13 @@ jobs:
 
         shell: bash
 
+      - name: Debug Coverage File
+        run: |
+          echo "Checking for .coverage file..."
+          ls -la
+          cat .coverage || echo "No .coverage file found"
+        shell: bash
+
 
       - name: Upload coverage report
         if: always()
