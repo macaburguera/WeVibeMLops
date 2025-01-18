@@ -14,6 +14,15 @@ import numpy as np
 
 def download_data(gdrive_link: str, raw_data_dir: str):
     """Download the dataset from Google Drive and save it to the specified directory."""
+    images_dir = os.path.join(raw_data_dir, "images")
+    labels_path = os.path.join(raw_data_dir, "labels.csv")
+
+    # Check if the data is already present
+    if os.path.exists(images_dir) and os.path.exists(labels_path):
+        print("Data already exists. Skipping download.")
+        return
+
+    print("Downloading data...")
     if not os.path.exists(raw_data_dir):
         os.makedirs(raw_data_dir)
 
@@ -46,6 +55,7 @@ def albumentations_transformations(image_size=(224, 224)):
         ToTensorV2(),
     ])
 
+# Remaining functions are unchanged
 def preprocess_images_in_batches(images_dir: str, labels: pd.DataFrame, transform, batch_size: int):
     """Preprocess images in smaller batches to avoid memory overload."""
 
@@ -160,10 +170,8 @@ def main(gdrive_link: str = "https://drive.google.com/drive/folders/1kCEyO3UFiZu
     # Ensure raw_data_dir and processed_data_dir exist
     os.makedirs(raw_data_dir, exist_ok=True)
     os.makedirs(processed_data_dir, exist_ok=True)
-    gdrive_link = "https://drive.google.com/drive/folders/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0?usp=sharing"
-    if True:
-        download_data(gdrive_link, raw_data_dir)
-
+    
+    download_data(gdrive_link, raw_data_dir)
     split_data(raw_data_dir, processed_data_dir, batch_size=batch_size)
 
 
