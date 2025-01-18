@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dog_breed_classifier"
-version = "0.0.1"
+version = "2.2.1"
 description = "Classifying Dog Breeds from pictures"
 authors = [
   { name = "Group 45", email = "your@email.com" },
@@ -34,4 +34,3 @@ line-length = 120
 [tool.coverage.run]
 source = ["src"]
 omit = ["*/tests/*"]  # Optional: exclude test files from coverage
-
