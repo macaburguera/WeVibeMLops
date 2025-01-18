@@ -181,3 +181,13 @@ raw/
 models/
 /outputs
 /data
+
+gdrive-credentials.json
+
+# Ignore DVC cache
+.dvc/cache/
+.dvc/tmp/
+
+# Ignore raw data or large untracked files
+raw/
+/models
