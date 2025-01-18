@@ -185,6 +185,8 @@ models/
 gdrive-credentials.json
 
 # Ignore DVC cache
+.dvc/
+.dvcignore
 .dvc/cache/
 .dvc/tmp/
 
