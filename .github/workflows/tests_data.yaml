@@ -59,7 +59,6 @@ jobs:
           fi
 
       # Step 5: Configure DVC and Google Drive
-      - name: Configure DVC and Google Drive
       - uses: iterative/setup-dvc@v1
         run: |
           echo "${{ secrets.GDRIVE_CREDENTIALS }}" > gdrive-credentials.json
