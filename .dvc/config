@@ -1,5 +1,0 @@
-[core]
-    remote = myremote
-    autostage = true
-['remote "myremote"']
-    url = ../1dzU57nTbziYz9A5phOpLDVYRnUBIqvWZ

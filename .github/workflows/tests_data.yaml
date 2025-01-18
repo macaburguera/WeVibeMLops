@@ -47,7 +47,7 @@ jobs:
       - name: Pull Data with DVC
         run: |
           dvc init
-          dvc remote default myremote
+          dvc remote add -d myremote gdrive://1dzU57nTbziYz9A5phOpLDVYRnUBIqvWZ
           dvc pull
 
       - name: Run data tests
