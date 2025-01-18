@@ -66,7 +66,7 @@ jobs:
           dvc remote modify myremote gdrive_use_service_account true
          # dvc remote modify myremote --local gdrive_service_account_json_file_path gdrive-credentials.json
         env:
-        GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS }}
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS }}
 
       # Step 6: Pull Data with DVC
       - name: Pull Data with DVC
