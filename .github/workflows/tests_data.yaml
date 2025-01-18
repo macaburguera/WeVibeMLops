@@ -64,7 +64,7 @@ jobs:
           echo "${{ secrets.GDRIVE_CREDENTIALS }}" > gdrive-credentials.json
           dvc remote add -d myremote gdrive://1dzU57nTbziYz9A5phOpLDVYRnUBIqvWZ || echo "Remote already exists"
           dvc remote modify myremote --local gdrive_use_service_account true
-          dvc remote modify myremote --local gdrive_service_account_json_file_path gdrive-credentials.json
+          dvc remote modify myremote --local gdrive_service_account_json_file_path /randompath
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS }}
 
