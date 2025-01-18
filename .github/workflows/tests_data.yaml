@@ -49,6 +49,7 @@ jobs:
 
 
       # Step 6: Pull Data with DVC
+      - uses: iterative/setup-dvc@v1
       - name: Pull Data with DVC
         run: |
           dvc pull || echo "Some data files may be missing; check logs"
