@@ -154,13 +154,14 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
                              os.path.join(processed_data_dir, "test", "test_targets.pt"))
 
 
-def main(gdrive_link: str = "", raw_data_dir: str = "data/raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
+def main(gdrive_link: str = "https://drive.google.com/drive/folders/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0?usp=sharing", 
+         raw_data_dir: str = "data/raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
     """Complete process: download, split, process, and save datasets."""
     # Ensure raw_data_dir and processed_data_dir exist
     os.makedirs(raw_data_dir, exist_ok=True)
     os.makedirs(processed_data_dir, exist_ok=True)
-
-    if gdrive_link:
+    gdrive_link = "https://drive.google.com/drive/folders/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0?usp=sharing"
+    if True:
         download_data(gdrive_link, raw_data_dir)
 
     split_data(raw_data_dir, processed_data_dir, batch_size=batch_size)
