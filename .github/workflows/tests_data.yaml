@@ -42,9 +42,12 @@ jobs:
           pip install pytest
           pip install -e .
           pip install dvc[gs]
+          pip install dvc[gdrive]
 
       - name: Pull Data with DVC
         run: |
+          dvc init
+          dvc remote default myremote
           dvc pull
 
       - name: Run data tests
