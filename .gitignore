@@ -193,3 +193,5 @@ gdrive-credentials.json
 # Ignore raw data or large untracked files
 raw/
 /models
+.dvc
+.dvcignore
