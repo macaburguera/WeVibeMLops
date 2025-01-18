@@ -52,6 +52,8 @@ jobs:
       - name: Pull Data with DVC
         run: |
           dvc pull || echo "Some data files may be missing; check logs"
+        env:
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS }}
 
       # Step 7: Run data-related tests
       - name: Run data tests
