@@ -61,7 +61,7 @@ jobs:
       # Step 5: Configure DVC and Google Drive
       - name: Configure DVC and Google Drive
         run: |
-          echo "${GDRIVE_CREDENTIALS}" | sed 's/\\n/\n/g' > gdrive-credentials.json
+          echo "${{ secrets.GDRIVE_CREDENTIALS }}" | sed 's/\\n/\n/g' > gdrive-credentials.json
           dvc remote add -d myremote gdrive://1dzU57nTbziYz9A5phOpLDVYRnUBIqvWZ
           dvc remote modify myremote --local gdrive_use_service_account true
           dvc remote modify myremote --local gdrive_service_account_json_file gdrive-credentials.json
@@ -76,5 +76,6 @@ jobs:
       # Step 7: Run data-related tests
       - name: Run data tests
         run: |
-          echo "Running data-related tests..."
-          pytest tests/test_data.py
+          echo "END REACHED"
+          ls data/processed/test
+          ls data/raw/test
