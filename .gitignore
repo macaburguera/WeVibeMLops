@@ -185,7 +185,7 @@ models/
 gdrive-credentials.json
 
 # Ignore DVC cache
-.dvc/
+
 .dvcignore
 .dvc/cache/
 .dvc/tmp/
@@ -193,5 +193,3 @@ gdrive-credentials.json
 # Ignore raw data or large untracked files
 raw/
 /models
-.dvc
-.dvcignore
