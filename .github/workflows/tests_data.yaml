@@ -2,6 +2,9 @@ name: Test on Data Changes
 
 on:
   push:
+    branches:
+      - main
+      - maca
     paths:
       - "data/**"
       - "*.dvc"
