@@ -44,7 +44,9 @@ jobs:
           pip install coverage
           pip install pytest
           pip install -e .
-          pip install dvc[gdrive]
+          pip install dvc
+          pip install dvc-gdrive
+
 
       # Step 4: Initialize DVC (only if not already initialized)
       - name: Initialize DVC
