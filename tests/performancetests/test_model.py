@@ -42,7 +42,7 @@ def test_model_speed():
     """
     # Retrieve W&B API key and model name from environment variables
     wandb_api_key = os.getenv("WANDB_API_KEY")
-    model_name = os.getenv("MODEL_NAME")
+    model_name = os.getenv("WANDB_MODEL_NAME")
 
     if not wandb_api_key or not model_name:
         raise ValueError("WANDB_API_KEY or MODEL_NAME environment variable is not set.")
