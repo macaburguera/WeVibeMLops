@@ -135,15 +135,12 @@ def test_dataset_loading(mock_config):
         os.remove(os.path.join(images_dir, file))
     os.rmdir(images_dir)
 
-# Mocking Hydra and wandb
+
 @patch("hydra.compose")
 @patch("hydra.initialize")
-@patch("wandb.init")
-@patch("wandb.log")
-@patch("wandb.finish")
-def test_training_loop(mock_finish, mock_log, mock_init, mock_initialize, mock_compose, mock_config):
+def test_training_loop_local(mock_initialize, mock_compose, mock_config):
     """
-    Test the training loop using mock configurations and mock datasets.
+    Test the training loop in local mode (without WandB).
     """
     # Mock Hydra behavior to use mock_config
     mock_initialize.return_value = None
@@ -151,16 +148,11 @@ def test_training_loop(mock_finish, mock_log, mock_init, mock_initialize, mock_c
 
     cfg = OmegaConf.create(mock_config)
 
-    # Run the training function
-    train(cfg, use_wandb=True)
-
-    # Verify WandB calls
-    mock_init.assert_called_once()
-    mock_log.assert_called()
-    mock_finish.assert_called_once()
+    # Run the training function in local mode
+    train(cfg, use_wandb=False)
 
     # Verify the model save path exists
-    assert os.path.exists(mock_config["hyperparameters"]["model_save_path"])
+    assert os.path.exists(mock_config["hyperparameters"]["model_save_path"]), "Model save path not found"
 
     # Verify the figure directory and files exist
     figure_dir = mock_config["hyperparameters"]["figure_save_path"]

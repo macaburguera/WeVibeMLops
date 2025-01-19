@@ -117,6 +117,37 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
     torch.save(model.state_dict(), model_save_path)
     print(f"Model saved to {model_save_path}")
 
+    # Generate and save plots
+    figure_save_path = cfg.hyperparameters.figure_save_path
+    os.makedirs(figure_save_path, exist_ok=True)
+
+    # Plot training and validation loss
+    plt.figure()
+    plt.plot(train_losses, label="Train Loss")
+    plt.plot(val_losses, label="Validation Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.title("Training and Validation Loss")
+    loss_plot_path = os.path.join(figure_save_path, "training_loss.png")
+    plt.savefig(loss_plot_path)
+    print(f"Loss plot saved to {loss_plot_path}")
+    plt.close()
+
+    # Plot training and validation accuracy
+    plt.figure()
+    plt.plot(train_accuracies, label="Train Accuracy")
+    plt.plot(val_accuracies, label="Validation Accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.title("Training and Validation Accuracy")
+    acc_plot_path = os.path.join(figure_save_path, "training_accuracy.png")
+    plt.savefig(acc_plot_path)
+    print(f"Accuracy plot saved to {acc_plot_path}")
+    plt.close()
+
+
     if use_wandb:
         # Create and log artifact
         artifact = wandb.Artifact("dog-breed-classifier-model", type="model")
