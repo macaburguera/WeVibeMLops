@@ -10,15 +10,11 @@ import wandb
 import yaml
 import matplotlib.pyplot as plt
 
-
 # Device configuration
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-#  processed_data_dir = to_absolute_path("data/processed")
-
 # Typer app
 app = typer.Typer()
-
 
 def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
     print("Starting training with SimpleResNetClassifier...")
@@ -120,54 +116,37 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
     torch.save(model.state_dict(), model_save_path)
     print(f"Model saved to {model_save_path}")
 
-    # Generate plots
-    figure_save_path = cfg.hyperparameters.figure_save_path
-    os.makedirs(figure_save_path, exist_ok=True)
-
-    # Loss plot
-    plt.figure()
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), train_losses, label="Train Loss")
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), val_losses, label="Validation Loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.title("Loss per Epoch")
-    loss_plot_path = os.path.join(figure_save_path, "training_loss.png")
-    plt.savefig(loss_plot_path)
-    print(f"Loss plot saved to {loss_plot_path}")
-    plt.close()
-
-    # Accuracy plot
-    plt.figure()
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), train_accuracies, label="Train Accuracy")
-    plt.plot(range(1, cfg.hyperparameters.epochs + 1), val_accuracies, label="Validation Accuracy")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy")
-    plt.legend()
-    plt.title("Accuracy per Epoch")
-    accuracy_plot_path = os.path.join(figure_save_path, "training_accuracy.png")
-    plt.savefig(accuracy_plot_path)
-    print(f"Accuracy plot saved to {accuracy_plot_path}")
-    plt.close()
-
     if use_wandb:
+        # Create and log artifact
+        artifact = wandb.Artifact("dog-breed-classifier-model", type="model")
+        artifact.add_file(model_save_path)
+        logged_artifact = wandb.log_artifact(artifact)
+        artifact.wait()
+
+        # Link artifact to registry collection
+        logged_artifact.link(
+            target_path="macarenaburguera-danmarks-tekniske-universitet-dtu-org/wandb-registry-model/dbc"
+        )
+
         wandb.finish()
 
-@app.callback(invoke_without_command=True)
-def default(ctx: typer.Context, wandb_flag: bool = typer.Option(False, help="Enable Weights & Biases for logging")):
-    if ctx.invoked_subcommand is None:
-        main(wandb_flag=wandb_flag)
-
-
 @app.command()
-def main(wandb_flag: bool = typer.Option(False, help="Enable Weights & Biases for logging")):
+def normal():
+    """Run training locally without WandB."""
     with hydra.initialize(config_path="../../configs"):
         cfg = hydra.compose(config_name="config")
-        train(cfg, use_wandb=wandb_flag)
+        train(cfg, use_wandb=False)
 
+@app.command()
+def wandb_run():
+    """Run training with WandB logging."""
+    with hydra.initialize(config_path="../../configs"):
+        cfg = hydra.compose(config_name="config")
+        train(cfg, use_wandb=True)
 
 @app.command()
 def sweep():
+    """Run a hyperparameter sweep."""
     sweep_config_path = to_absolute_path("configs/sweep.yaml")
 
     if not os.path.exists(sweep_config_path):
@@ -185,7 +164,6 @@ def sweep():
             train(cfg, use_wandb=True)
 
     wandb.agent(sweep_id, function=sweep_train)
-
 
 if __name__ == "__main__":
     app()

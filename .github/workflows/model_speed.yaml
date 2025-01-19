@@ -1,0 +1,39 @@
+name: Test Model Performance
+
+on:
+  push:
+    branches:
+      - main
+      - maca
+  pull_request:
+    branches:
+      - main
+      - maca
+
+jobs:
+  test_model:
+    name: Test Model Performance
+    runs-on: ubuntu-latest
+    env:
+      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+      WANDB_MODEL_NAME: ${{ secrets.WANDB_MODEL_NAME }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install torch torchvision timm
+          pip install wandb
+          pip install pytest
+
+      - name: Test model performance
+        run: |
+          pytest tests/performancetests/test_model.py

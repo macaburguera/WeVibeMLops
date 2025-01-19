@@ -190,6 +190,9 @@ gdrive-credentials.json
 .dvc/cache/
 .dvc/tmp/
 
+
 # Ignore raw data or large untracked files
 raw/
 /models
+wandb/
+artifacts/
