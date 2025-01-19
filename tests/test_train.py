@@ -23,7 +23,7 @@ def mock_config():
             "model_save_path": "tests/mock_models/resnet_model.pt",
             "figure_save_path": "tests/mock_figures",
             "processed_data_dir": "tests/mock_data",
-            "model_params": {"num_classes": 4, "resnet_model": "resnet18"},
+            "model_params": {"num_classes": 4, "resnet_model": "resnet50"},
         }
     }
 
