@@ -29,6 +29,7 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
     if use_wandb:
         wandb.init(
             project="dog-breed-classifier",
+            entity="macarenaburguera-danmarks-tekniske-universitet-dtu",  # Set your team entity here
             config={
                 "learning_rate": cfg.hyperparameters.lr,
                 "batch_size": cfg.hyperparameters.batch_size,
@@ -131,7 +132,7 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
         wandb.finish()
 
 @app.command()
-def normal():
+def local():
     """Run training locally without WandB."""
     with hydra.initialize(config_path="../../configs"):
         cfg = hydra.compose(config_name="config")
@@ -155,7 +156,7 @@ def sweep():
     with open(sweep_config_path, "r") as f:
         sweep_config = yaml.safe_load(f)
 
-    sweep_id = wandb.sweep(sweep_config, project="dog-breed-classifier")
+    sweep_id = wandb.sweep(sweep_config, project="dog-breed-classifier", entity="macarenaburguera-danmarks-tekniske-universitet-dtu")
 
     def sweep_train():
         with hydra.initialize(config_path="../../configs"):
@@ -164,6 +165,12 @@ def sweep():
             train(cfg, use_wandb=True)
 
     wandb.agent(sweep_id, function=sweep_train)
+
+@app.callback()
+def main(ctx: typer.Context):
+    """Default command when no arguments are provided."""
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(local)
 
 if __name__ == "__main__":
     app()

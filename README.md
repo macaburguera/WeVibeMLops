@@ -54,14 +54,14 @@ chmod +x run_all.sh
 #### Train A Model Individually
 To train a model on a specific configuration, run
 ```bash
-python src/dog_breed_classifier/train.py
+python src/dog_breed_classifier/train.py local
 ```
 You'll find the hyperparameters for a single training session in /config/config.yaml
 
-To do the training with wandb, run it with the flag --wandb
+To do the training with wandb, run it with the flag wandb-run
 
 ```bash
-python src/dog_breed_classifier/train.py --wandb
+python src/dog_breed_classifier/train.py wandb-run
 ```
 
 #### Parameter sweep
