@@ -16,13 +16,13 @@ repos:
     - id: detect-secrets
       args: ["--baseline", ".secrets.baseline"]
 
-# Good coding practices check
+# Good coding
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.4.7
   hooks:
     # try to fix what is possible
     - id: ruff
-        args: ["--fix"]
+      args: ["--fix"]
     # perform formatting updates
     - id: ruff-format
     # validate if all is fine with preview mode
