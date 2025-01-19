@@ -147,7 +147,6 @@ def train(cfg: DictConfig, use_wandb: bool, override_hyperparams=None):
     print(f"Accuracy plot saved to {acc_plot_path}")
     plt.close()
 
-
     if use_wandb:
         # Create and log artifact
         artifact = wandb.Artifact("dog-breed-classifier-model", type="model")
