@@ -14,11 +14,20 @@ import numpy as np
 
 def download_data(gdrive_link: str, raw_data_dir: str):
     """Download the dataset from Google Drive and save it to the specified directory."""
+    images_dir = os.path.join(raw_data_dir, "images")
+    labels_path = os.path.join(raw_data_dir, "labels.csv")
+
+    # Check if the data is already present
+    if os.path.exists(images_dir) and os.path.exists(labels_path):
+        print("Raw data already exists. Skipping download.")
+        return
+
+    print("Downloading raw data...")
     if not os.path.exists(raw_data_dir):
         os.makedirs(raw_data_dir)
 
     os.system(f"gdown --folder {gdrive_link} -O {raw_data_dir}")
-    print(f"Downloaded data to {raw_data_dir}")
+    print(f"Downloaded raw data to {raw_data_dir}")
 
     # Check if images.zip exists and decompress it
     zip_path = os.path.join(raw_data_dir, "images.zip")
@@ -77,7 +86,6 @@ def preprocess_images_in_batches(images_dir: str, labels: pd.DataFrame, transfor
     if batch_images:
         yield torch.stack(batch_images), torch.tensor(batch_targets, dtype=torch.long)
 
-
 def combine_batches_and_save(image_batches, target_batches, output_images_path, output_targets_path):
     """Combine all batches and save them to disk."""
     if not image_batches or not target_batches:
@@ -92,7 +100,6 @@ def combine_batches_and_save(image_batches, target_batches, output_images_path, 
 
     print(f"Saved combined images to {output_images_path}")
     print(f"Saved combined targets to {output_targets_path}")
-
 
 def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224), batch_size=100):
     """Split data into train/validation/test and process it."""
@@ -153,18 +160,15 @@ def split_data(raw_data_dir: str, processed_data_dir: str, image_size=(224, 224)
                              os.path.join(processed_data_dir, "test", "test_images.pt"),
                              os.path.join(processed_data_dir, "test", "test_targets.pt"))
 
-
-def main(gdrive_link: str = "", raw_data_dir: str = "data/raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
+def main(gdrive_link: str = "https://drive.google.com/drive/folders/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0?usp=sharing", 
+         raw_data_dir: str = "raw", processed_data_dir: str = "data/processed", batch_size: int = 100):
     """Complete process: download, split, process, and save datasets."""
     # Ensure raw_data_dir and processed_data_dir exist
     os.makedirs(raw_data_dir, exist_ok=True)
     os.makedirs(processed_data_dir, exist_ok=True)
 
-    if gdrive_link:
-        download_data(gdrive_link, raw_data_dir)
-
+    download_data(gdrive_link, raw_data_dir)
     split_data(raw_data_dir, processed_data_dir, batch_size=batch_size)
-
 
 if __name__ == "__main__":
     typer.run(main)

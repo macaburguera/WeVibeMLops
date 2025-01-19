@@ -17,7 +17,14 @@
    ```bash
    pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu118
    ```
-   Then go on with the rest
+   Then go on with the rest. To install the package:
+
+   ```bash
+   pip install -e .
+   ```
+
+   Or either just the strict requirements:
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -47,14 +54,14 @@ chmod +x run_all.sh
 #### Train A Model Individually
 To train a model on a specific configuration, run
 ```bash
-python src/dog_breed_classifier/train.py
+python src/dog_breed_classifier/train.py local
 ```
 You'll find the hyperparameters for a single training session in /config/config.yaml
 
-To do the training with wandb, run it with the flag --wandb
+To do the training with wandb, run it with the flag wandb-run
 
 ```bash
-python src/dog_breed_classifier/train.py --wandb
+python src/dog_breed_classifier/train.py wandb-run
 ```
 
 #### Parameter sweep

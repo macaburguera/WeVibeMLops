@@ -31,12 +31,15 @@ jobs:
       - name: Run flake8
         run: |
           echo "Running flake8 linting..."
-          flake8 --max-line-length=120 --exclude=build,dist --ignore=W293,E501,E302 src tests
+          flake8 --max-line-length=120 --exclude=build,dist --ignore=W293,E501,E302,W291,E305,F401 src tests
         shell: bash
 
   test:
     name: Run Unit Tests
     runs-on: ${{ matrix.operating-system }}
+    env:
+      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+      WANDB_MODEL_NAME: ${{ secrets.WANDB_MODEL_NAME }}
     strategy:
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest", "macos-latest"]

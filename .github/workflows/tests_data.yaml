@@ -1,0 +1,75 @@
+name: Test on Data Changes
+
+on:
+  push:
+    branches:
+      - main
+      - maca
+    paths:
+      - "data/**"
+      - "*.dvc"
+      - ".dvc/**"
+      - ".dvcignore"
+  pull_request:
+    paths:
+      - "data/**"
+      - "*.dvc"
+      - ".dvc/**"
+      - ".dvcignore"
+
+jobs:
+  data-tests:
+    name: Test Data Changes
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+          pip install tomli
+          pip install coverage
+          pip install pytest
+          pip install -e .
+          pip install dvc
+          pip install dvc-gdrive
+
+      # Step 4: Initialize DVC (only if not already initialized)
+      - name: Initialize DVC
+        run: |
+          if [ ! -d .dvc ]; then
+            echo "Initializing DVC repository..."
+            dvc init
+          else
+            echo "DVC repository already initialized."
+          fi
+
+      # Step 5: Configure Google Drive and Pull Data
+      - name: Configure DVC and Google Drive
+        env:
+          GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+        run: |
+          echo "$GDRIVE_CREDENTIALS" > gdrive-credentials.json
+          dvc remote add -d myremote gdrive://1xzGNveaWZ0ZOb6yergL05VR63bYG5n8D --force
+          dvc remote modify myremote gdrive_use_service_account true
+          dvc remote modify myremote --local gdrive_service_account_json_file_path gdrive-credentials.json
+          dvc pull
+
+      # Step 6: Run data-related tests
+      - name: Run data tests
+        run: |
+          echo "END REACHED"
+          ls data/processed/test

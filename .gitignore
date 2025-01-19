@@ -176,9 +176,23 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 data/
+raw/
 
-/data
-/models
-/1kCEyO3UFiZuUH93SIJLK0Zt8mh7mBig0
-/1dzU57nTbziYz9A5phOpLDVYRnUBIqvWZ
+models/
 /outputs
+/data
+
+gdrive-credentials.json
+
+# Ignore DVC cache
+
+.dvcignore
+.dvc/cache/
+.dvc/tmp/
+
+
+# Ignore raw data or large untracked files
+raw/
+/models
+wandb/
+artifacts/
