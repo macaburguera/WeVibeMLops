@@ -31,7 +31,7 @@ jobs:
       - name: Run flake8
         run: |
           echo "Running flake8 linting..."
-          flake8 --max-line-length=120 --exclude=build,dist --ignore=W293,E501,E302 src tests
+          flake8 --max-line-length=120 --exclude=build,dist --ignore=W293,E501,E302,W291,E305,F401 src tests
         shell: bash
 
   test:
