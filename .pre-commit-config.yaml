@@ -4,6 +4,26 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
+    -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
+
+# Detect Secrets: Scans for secrets in code (e.g., AWS keys, passwords)
+- repo: https://github.com/Yelp/detect-secrets
+  rev: v1.4.0
+  hooks:
+    - id: detect-secrets
+      args: ["--baseline", ".secrets.baseline"]
+
+# Good coding
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.4.7
+  hooks:
+    # try to fix what is possible
+    - id: ruff
+      args: ["--fix"]
+    # perform formatting updates
+    - id: ruff-format
+    # validate if all is fine with preview mode
+    - id: ruff
