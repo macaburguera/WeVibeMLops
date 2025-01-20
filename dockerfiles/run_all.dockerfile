@@ -12,14 +12,20 @@ RUN apt-get update && \
 COPY ../src src/
 COPY ../data data/
 COPY ../configs configs/
+COPY ../tests tests/
 COPY ../requirements.txt requirements.txt
 COPY ../requirements_dev.txt requirements_dev.txt
 COPY ../README.md README.md
 COPY ../run_all.sh run_all.sh
+COPY ../models.dvc models.dvc
+COPY ../data.dvc data.dvc
+COPY ../pyproject.toml pyproject.toml
 
 # Install Python dependencies
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt 
 #RUN pip install . --no-deps --no-cache-dir --verbose
+
+RUN pip install -e .
 
 # Ensure the train_all.sh script is executable
 RUN chmod +x run_all.sh

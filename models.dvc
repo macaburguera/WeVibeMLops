@@ -1,6 +1,46 @@
 outs:
-- md5: 6203e4b1837af7f9548b1e7edb8f0e12.dir
-  size: 780879253
-  nfiles: 6
-  hash: md5
+- hash: md5
   path: models
+  files:
+  - relpath: .gitkeep
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
+    cloud:
+      gcloud_remote:
+        etag: 0893e4f4d2e5848b031001
+        version_id: '1737393096700435'
+  - relpath: cnn_model.pth
+    md5: be22f6ef57e07c19ec0cc4fcc1613b93
+    size: 206153861
+    cloud:
+      gcloud_remote:
+        etag: 08869eda84e6848b031001
+        version_id: '1737393201123078'
+  - relpath: dino_model.pth
+    md5: 8ffb13b167b41f67f2284e0311364fae
+    size: 86911894
+    cloud:
+      gcloud_remote:
+        etag: 0884cbd6dee5848b031001
+        version_id: '1737393121371524'
+  - relpath: dino_resnet_model.pth
+    md5: 999e16c36c9395b7eff371d43ea7d1c1
+    size: 186321306
+    cloud:
+      gcloud_remote:
+        etag: 08dc95ba81e6848b031001
+        version_id: '1737393194306268'
+  - relpath: resnet_model.pth
+    md5: 05d297b699b86860d6ad0fe8a7c2b67e
+    size: 95345990
+    cloud:
+      gcloud_remote:
+        etag: 0899cda49df2848b031001
+        version_id: '1737396473898649'
+  - relpath: simple_convnet.pth
+    md5: b4ee835e955184e3b66bee1821ba4113
+    size: 206146202
+    cloud:
+      gcloud_remote:
+        etag: 08a683e3d2e5848b031001
+        version_id: '1737393096409510'
