@@ -59,6 +59,7 @@ jobs:
 
       # Step 5: Configure Google Drive and Pull Data
       - name: Configure DVC and Google Drive
+        run: |
           dvc remote add -d myremote gs://doge_bucket45--force
           dvc pull --no-run-cache
 
