@@ -3,6 +3,7 @@ import torch
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from PIL import Image
 from torchvision import transforms
+import pandas as pd
 from src.dog_breed_classifier.model import SimpleResNetClassifier
 
 # Initialize the FastAPI app
@@ -20,6 +21,16 @@ model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
 model.eval()
 print("Model loaded successfully.")
 
+# Load the breed mapping
+BREED_MAPPING_PATH = os.path.join(os.getcwd(), "data", "breed_mapping.csv")
+if not os.path.exists(BREED_MAPPING_PATH):
+    raise FileNotFoundError(f"Breed mapping file not found at {BREED_MAPPING_PATH}")
+
+print(f"Loading breed mapping from {BREED_MAPPING_PATH}...")
+breed_mapping = pd.read_csv(BREED_MAPPING_PATH)
+breed_id_to_name = dict(zip(breed_mapping["ID"], breed_mapping["Breed"]))
+print("Breed mapping loaded successfully.")
+
 # Define the image transformation pipeline
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -33,7 +44,7 @@ async def predict(file: UploadFile = File(...)):
     Predict the breed of a dog from an uploaded image.
     """
     if not file.filename.endswith((".png", ".jpg", ".jpeg")):
-        raise HTTPException(status_code=400, detail="File must be an image (png, jpg, jpeg).")
+        return {"filename": file.filename, "predicted_breed": "Invalid file type. Please upload a .png, .jpg, or .jpeg image."}
 
     try:
         # Read the image file
@@ -47,8 +58,13 @@ async def predict(file: UploadFile = File(...)):
             outputs = model(image_tensor)
             predicted_class = torch.argmax(outputs, dim=1).item()
         
-        # Return the predicted class
-        return {"filename": file.filename, "predicted_breed": f"Breed ID: {predicted_class}"}
+        # Get the breed name
+        predicted_breed = breed_id_to_name.get(predicted_class, "Unknown breed")
+        
+        # Return the predicted breed name
+        return {"filename": file.filename, "predicted_breed": predicted_breed}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing the image: {e}")
+        # Log the error and return a graceful response
+        print(f"Error processing the image: {e}")
+        return {"filename": file.filename, "predicted_breed": "Unknown breed"}

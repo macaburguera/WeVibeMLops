@@ -17,15 +17,15 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy project files (adjust paths relative to dockerfiles)
-COPY ../src src/
+COPY src src/
 #COPY ../data data/
-COPY ../configs configs/
-COPY ../tests tests/
-COPY ../requirements.txt requirements.txt
-COPY ../requirements_dev.txt requirements_dev.txt
-COPY ../README.md README.md
-COPY ../run_all.sh run_all.sh
-COPY ../pyproject.toml pyproject.toml
+COPY configs configs/
+COPY tests tests/
+COPY requirements.txt requirements.txt
+COPY requirements_dev.txt requirements_dev.txt
+COPY README.md README.md
+COPY run_all.sh run_all.sh
+COPY pyproject.toml pyproject.toml
 
 # Install Python dependencies
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
@@ -37,12 +37,12 @@ RUN pip install dvc[gs]
 
 # Setup DVC
 #RUN dvc init --no-scm
-COPY ../.dvc/config .dvc/config
-COPY ../models.dvc models.dvc
-COPY ../data.dvc data.dvc
+COPY .dvc/config .dvc/config
+COPY models.dvc models.dvc
+COPY data.dvc data.dvc
 RUN dvc config core.no_scm true
-RUN dvc pull data.dvc
-RUN dvc pull models.dvc
+RUN dvc pull data.dvc --no-run-cache -v
+RUN dvc pull models.dvc --no-run-cache -v
 
 
 # Set entrypoint script to allow running commands easily

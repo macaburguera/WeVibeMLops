@@ -16,3 +16,6 @@ typer==0.15.1
 wandb==0.19.4
 opencv-python-headless==4.7.0.72
 gdown
+locust
+bentoml
+streamlit

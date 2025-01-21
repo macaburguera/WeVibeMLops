@@ -2,6 +2,13 @@ outs:
 - hash: md5
   path: data
   files:
+  - relpath: breed_mapping.csv
+    md5: 409615e880a17365d35a865d36286bba
+    size: 2090
+    cloud:
+      gcloud_remote:
+        etag: 0888e6caee98878b031001
+        version_id: '1737475564417800'
   - relpath: processed/test/test_images.pt
     md5: 2440cef0cb5eb3bdf8d6e215e6c339b9
     size: 923641008

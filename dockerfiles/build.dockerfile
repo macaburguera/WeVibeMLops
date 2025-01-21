@@ -40,10 +40,15 @@ RUN pip install dvc[gs]
 COPY /.dvc/config .dvc/config
 COPY models.dvc models.dvc
 COPY data.dvc data.dvc
-RUN dvc config core.no_scm true
-RUN dvc pull data.dvc
-RUN dvc pull models.dvc
+#RUN dvc init --no-scm -f
+#RUN dvc remote add -d myremote gs://doge_bucket45 --force
 
+RUN dvc config core.no_scm true
+RUN dvc pull data/breed_mapping.csv --no-run-cache -v
+RUN dvc pull models/resnet_model.pth --no-run-cache -v
+RUN dvc pull data/processed/test --no-run-cache -v
+RUN dvc pull data/processed/validation --no-run-cache -v
+RUN dvc pull data/processed/train --no-run-cache -v
 
 # Set entrypoint script to allow running commands easily
 COPY ../entrypoint.sh entrypoint.sh
