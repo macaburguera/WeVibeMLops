@@ -1,5 +1,6 @@
 import os
 import io
+import time
 import torch
 from fastapi import FastAPI, UploadFile, File
 from PIL import Image
@@ -10,10 +11,20 @@ from datetime import datetime
 from google.cloud import storage
 from skimage.filters import sobel
 from skimage.measure import shannon_entropy
+from prometheus_client import Counter, Histogram, Summary, make_asgi_app
 from src.dog_breed_classifier.model import SimpleResNetClassifier
 
 # Initialize the FastAPI app
 app = FastAPI()
+
+# Prometheus metrics setup
+error_counter = Counter("api_errors", "Total number of errors encountered")
+request_counter = Counter("api_requests", "Total number of requests received")
+classification_time_histogram = Histogram("classification_time_seconds", "Time taken to classify an image")
+file_size_summary = Summary("file_size_bytes", "Size of uploaded files in bytes")
+
+# Mount Prometheus metrics endpoint
+app.mount("/metrics", make_asgi_app())
 
 # Google Cloud Storage setup
 BUCKET_NAME = "doge_bucket45"
@@ -130,21 +141,28 @@ async def predict(file: UploadFile = File(...)):
     """
     Predict the breed of a dog from an uploaded image.
     """
+    request_counter.inc()  # Increment request counter
+
     if not file.filename.endswith((".png", ".jpg", ".jpeg")):
         return {"filename": file.filename, "predicted_breed": "Invalid file type. Please upload a .png, .jpg, or .jpeg image."}
 
     try:
         # Read the image file
         image_bytes = await file.read()
+        file_size_summary.observe(len(image_bytes))  # Observe file size
+
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
         # Preprocess the image
         image_tensor = transform(image).unsqueeze(0)
 
         # Perform inference
+        start_time = time.time()
         with torch.no_grad():
             outputs = model(image_tensor)
             predicted_class = torch.argmax(outputs, dim=1).item()
+        classification_time = time.time() - start_time
+        classification_time_histogram.observe(classification_time)  # Observe classification time
 
         # Get the breed name
         predicted_breed = breed_id_to_name.get(predicted_class, "Unknown breed")
@@ -167,6 +185,7 @@ async def predict(file: UploadFile = File(...)):
         return {"filename": file.filename, "predicted_breed": predicted_breed, **metrics}
 
     except Exception as e:
+        error_counter.inc()  # Increment error counter
         # Log the error and return a graceful response
         print(f"Error processing the image: {e}")
         return {"filename": file.filename, "predicted_breed": "Unknown breed"}

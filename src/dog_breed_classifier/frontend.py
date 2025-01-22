@@ -3,9 +3,9 @@ import requests
 from PIL import Image
 
 # Define API endpoint
-API_URL = "http://localhost:8000/predict/"
+#API_URL = "http://localhost:8000/predict/"
 
-#API_URL = "https://doge-api-414169417184.europe-west1.run.app/predict/"
+API_URL = "https://doge-api-414169417184.europe-west1.run.app/predict/"
 
 st.title("Dog Breed Classifier")
 st.write("Upload an image of a dog, and the model will predict its breed.")
