@@ -143,7 +143,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 3 fill here ---
+--- We used Albumentations in our project to perform advanced image augmentations and effectively extend the variability of the dataset. Also used Optuna for hyperparameter optimization to fine-tune model architecture, learning rates, and training configurations. Lastly we used TIMM in our project to access a variety of pretrained models and well-known architectures.  ---
 
 ## Coding environment
 
@@ -163,7 +163,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 4 fill here ---
+--- All the projects necessary dependencies can be found in the requirements.txt except the Pythorch which is device dependant. For this we have a detailed process on our github repository README file ---
 
 ### Question 5
 
