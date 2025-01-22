@@ -1,5 +1,5 @@
-site_name: dog_breed_classifier
-site_author: Group 45
+site_name: Dog breed classifier project by WeVibeMLops group
+site_author: Attila Istvan Kiri
 docs_dir: source
 
 theme:
@@ -8,6 +8,19 @@ theme:
   features:
     - content.code.copy
     - content.code.annotate
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline 
+        name: Switch to dark mode
+      primary: teal
+      accent: purple 
+    - scheme: slate 
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode    
+      primary: teal
+      accent: lime
 
 plugins:
   - search
@@ -18,6 +31,16 @@ plugins:
             show_root_heading: true
             separate_signature: true
             show_signature_annotations: true
+            show_symbol_type_heading: true
+            annotations_path: brief
+            docstring_section_style: table
+
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/macaburguera/WeVibeMLops.git
 
 nav:
   - Home: index.md
+  - Model and training: my_api.md
