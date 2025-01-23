@@ -83,10 +83,12 @@ jobs:
 
       - name: Configure GCP credentials
         env:
-          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GDRIVE_CREDENTIALS }}
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "$GCP_SERVICE_ACCOUNT_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
+          gcloud auth activate-service-account --key-file=gcp-key.json
+          gcloud config set project dog-breed-classifier-45
         shell: bash
 
       - name: Run tests & coverage
