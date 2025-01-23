@@ -73,6 +73,8 @@ jobs:
           pip install pytest
           pip install -e .
           pip list
+          pip install dvc
+          pip install dv[gs] 
         shell: bash  # Ensures the script uses bash on all platforms
 
       - name: Prepare data directory
@@ -92,6 +94,22 @@ jobs:
 
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
+
+      # Step 4: Initialize DVC (only if not already initialized)
+      - name: Initialize DVC
+        run: |
+          if [ ! -d .dvc ]; then
+            echo "Initializing DVC repository..."
+            dvc init
+          else
+            echo "DVC repository already initialized."
+          fi
+
+      # Step 5: Configure Google Drive and Pull Data
+      - name: Configure DVC and Google Drive
+        run: |
+          dvc pull models/resnet_model.pth --no-run-cache -v
+
 
       - name: Run tests & coverage
         run: |
