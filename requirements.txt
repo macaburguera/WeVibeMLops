@@ -21,7 +21,7 @@ bentoml
 streamlit
 fastapi
 requests
-prometheus
+prometheus-client
 mkdocs
 mkdocstrings
 mkdocs-material
