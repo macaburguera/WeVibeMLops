@@ -87,11 +87,8 @@ jobs:
           project_id: dog-breed-classifier-45
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-
       - name: Run tests & coverage
         run: |
-          export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
-          echo "PYTHONPATH set to ${PYTHONPATH}"
           coverage run -m pytest tests/
           coverage report -m
         shell: bash
