@@ -9,6 +9,7 @@ on:
       - main
 
 jobs:
+
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
@@ -72,7 +73,9 @@ jobs:
           pip install pytest
           pip install -e .
           pip list
-        shell: bash  # Ensures the script uses bash on all platforms
+          pip install dvc
+          pip install dv[gs] 
+        shell: bash
 
       - name: Prepare data directory
         run: |
@@ -81,10 +84,37 @@ jobs:
           rm -rf .pytest_cache
         shell: bash
 
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      # Step 4: Initialize DVC (only if not already initialized)
+      - name: Initialize DVC
+        run: |
+          if [ ! -d .dvc ]; then
+            echo "Initializing DVC repository..."
+            dvc init
+          else
+            echo "DVC repository already initialized."
+          fi
+        shell: bash
+
+      # Step 5: Configure Google Drive and Pull Data
+      - name: Configure DVC and Google Drive
+        run: |
+          dvc pull models/resnet_model.pth --no-run-cache -v
+          dvc pull data/breed_mapping.csv --no-run-cache -v
+        shell: bash
+
       - name: Run tests & coverage
         run: |
-          export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
-          echo "PYTHONPATH set to ${PYTHONPATH}"
           coverage run -m pytest tests/
           coverage report -m
         shell: bash

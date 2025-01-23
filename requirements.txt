@@ -19,3 +19,10 @@ gdown
 locust
 bentoml
 streamlit
+fastapi
+requests
+prometheus-client
+mkdocs
+mkdocstrings
+mkdocs-material
+gcloud

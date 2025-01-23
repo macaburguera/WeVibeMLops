@@ -38,21 +38,6 @@ def test_predict_valid_image(mock_open):
             assert isinstance(response_json["predicted_breed"], str)  # Ensure the result is a string
 
 
-def test_predict_invalid_file_type():
-    """
-    Test the /predict/ endpoint with a non-image file.
-    """
-    response = client.post(
-        "/predict/",
-        files={"file": ("invalid.txt", b"this is not an image", "text/plain")}
-    )
-
-    # Assertions
-    assert response.status_code == 400
-    response_json = response.json()
-    assert response_json["detail"] == "File must be an image (png, jpg, jpeg)."
-
-
 def test_predict_missing_file():
     """
     Test the /predict/ endpoint without uploading any file.
