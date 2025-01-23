@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from evidently.report import Report
@@ -32,8 +31,6 @@ numeric_columns_labels = labels_features.select_dtypes(include=["float64", "int6
 
 # Ensure both datasets have the same numeric columns
 common_columns = list(set(numeric_columns_predictions).intersection(numeric_columns_labels))
-
-
 
 # Function to upload a file to GCS bucket
 def upload_to_gcs(bucket_name: str, source_file_name: str, destination_blob_name: str):

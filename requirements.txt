@@ -19,3 +19,6 @@ gdown
 locust
 bentoml
 streamlit
+fastapi
+requests
+prometheus

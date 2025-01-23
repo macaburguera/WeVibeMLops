@@ -2,8 +2,7 @@ import streamlit as st
 import requests
 from PIL import Image
 
-# Define API endpoint
-#API_URL = "http://localhost:8000/predict/"
+# API_URL = "http://localhost:8000/predict/"
 
 API_URL = "https://doge-api-414169417184.europe-west1.run.app/predict/"
 
