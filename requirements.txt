@@ -25,3 +25,4 @@ prometheus-client
 mkdocs
 mkdocstrings
 mkdocs-material
+gcloud
