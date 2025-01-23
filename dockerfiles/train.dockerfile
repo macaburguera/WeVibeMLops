@@ -18,6 +18,7 @@ RUN apt-get update && \
 
 # Copy project files (adjust paths relative to dockerfiles)
 COPY src src/
+COPY /scripts scripts/
 #COPY ../data data/
 COPY configs configs/
 COPY tests tests/

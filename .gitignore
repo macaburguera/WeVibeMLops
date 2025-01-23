@@ -196,3 +196,6 @@ raw/
 /models
 wandb/
 artifacts/
+
+labels_metrics_sampled.csv
+predictions_log.csv

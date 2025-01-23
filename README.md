@@ -47,8 +47,8 @@ That will download the original dataset, preprocess it and save the train, test 
 #### Building from scratch
 In Linux, Git Bash, or WSL, you can build both the processed dataset and the model by running
 ```bash
-chmod +x run_all.sh
-./run_all.sh
+chmod +x scripts/run_all.sh
+./scripts/run_all.sh
 ```
 
 #### Train A Model Individually
@@ -93,7 +93,6 @@ The goal of this project is to build a **dog breed classifier** capable of disti
 ## Framework
 The project will be based on PyTorch and will leverage its ecosystem for efficient model development and experimentation:
 - **Albumentations**: To perform advanced image augmentations and effectively extend the variability of the dataset, improving the model's generalization capabilities.
-- **Optuna**: For hyperparameter optimization to fine-tune model architecture, learning rates, and training configurations.
 - **TIMM**: To access a variety of pretrained models and well-known architectures, enabling faster development and more accurate predictions.
 
 ## Data
@@ -105,13 +104,8 @@ The images are of varying resolutions and backgrounds, representing real-world d
 **Preprocessing** will include resizing images to a uniform resolution, applying Albumentations-based augmentations (e.g., cropping, flipping, color jittering), and splitting the data into training, validation, and test sets.
 
 ## Models
-The project will primarily explore pretrained models to achieve a balance between accurate feature extraction and effective classification:
-- **DINO**: Transformer-based model used for its ability to capture global and fine-grained features from the images.
-- **ViT**: Vision Transformer model. Potentially used as an alternative or in combination with DINO.
-- **ResNet**: Widely used model, more focused on robust low and mid-level feature extraction.
-- **EfficientNet**:Tested as a lightweight and efficient model, may be an alternative to ResNet.
+The project will primarily explore pretrained Resnet variants, which will be fine-tuned to perform an accurate classification of the different existing dog breeds.
 
-The final architecture will combine an optimal selection of these models using a feature concatenation approach, with Optuna guiding the optimization of hyperparameters for the combined pipeline.
 # dog_breed_classifier
 
 Classifying Dog Breeds from pictures, Group 45

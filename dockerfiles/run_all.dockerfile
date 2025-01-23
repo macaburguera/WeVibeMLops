@@ -11,6 +11,7 @@ RUN apt-get update && \
 # Copy project files (adjust paths relative to dockerfiles)
 COPY ../src src/
 COPY ../data data/
+COPY /scripts scripts/
 COPY ../configs configs/
 COPY ../tests tests/
 COPY ../requirements.txt requirements.txt
@@ -28,7 +29,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
 RUN pip install -e .
 
 # Ensure the train_all.sh script is executable
-RUN chmod +x run_all.sh
+RUN chmod +x scripts/run_all.sh
 
 # Set the entry point to execute the train_all.sh script
-ENTRYPOINT ["./run_all.sh"]
+ENTRYPOINT ["./scripts/run_all.sh"]

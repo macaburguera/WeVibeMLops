@@ -18,6 +18,7 @@ RUN apt-get update && \
 
 # Copy project files (adjust paths relative to dockerfiles)
 COPY /src src/
+COPY /scripts scripts/
 #COPY ../data data/
 COPY /configs configs/
 COPY /tests tests/
@@ -51,6 +52,5 @@ RUN dvc pull data/processed/validation --no-run-cache -v
 RUN dvc pull data/processed/train --no-run-cache -v
 
 # Set entrypoint script to allow running commands easily
-COPY ../entrypoint.sh entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-ENTRYPOINT ["./entrypoint.sh"]
+RUN chmod +x ./scripts/entrypoint.sh
+ENTRYPOINT ["./scripts/entrypoint.sh"]
