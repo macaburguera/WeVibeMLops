@@ -81,16 +81,12 @@ jobs:
           rm -rf .pytest_cache
         shell: bash
 
-      - name: Configure GCP credentials
-        env:
-          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-        run: |
-          pip install gcloud
-          echo "$GCP_SERVICE_ACCOUNT_KEY" > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
-          gcloud auth activate-service-account --key-file=gcp-key.json
-          gcloud config set project dog-breed-classifier-45
-        shell: bash
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: dog-breed-classifier-45
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
 
       - name: Run tests & coverage
         run: |
