@@ -1,6 +1,5 @@
 [core]
-    remote = myremote
-['remote "myremote"']
-    url = gdrive://1xzGNveaWZ0ZOb6yergL05VR63bYG5n8D
-    gdrive_use_service_account = true
-    gdrive_service_account_json_file_path = ../gdrive-credentials.json
+    remote = gcloud_remote
+['remote "gcloud_remote"']
+    url = gs://doge_bucket45
+    version_aware = true

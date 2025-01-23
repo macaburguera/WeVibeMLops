@@ -1,6 +1,18 @@
 outs:
-- md5: 6203e4b1837af7f9548b1e7edb8f0e12.dir
-  size: 780879253
-  nfiles: 6
-  hash: md5
+- hash: md5
   path: models
+  files:
+  - relpath: .gitkeep
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
+    cloud:
+      gcloud_remote:
+        etag: 0893e4f4d2e5848b031001
+        version_id: '1737393096700435'
+  - relpath: resnet_model.pth
+    md5: 05d297b699b86860d6ad0fe8a7c2b67e
+    size: 95345990
+    cloud:
+      gcloud_remote:
+        etag: 0899cda49df2848b031001
+        version_id: '1737396473898649'

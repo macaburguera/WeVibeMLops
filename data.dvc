@@ -1,6 +1,53 @@
 outs:
-- md5: e8b6258ea18dfd5a7483ae64d61d9143.dir
-  size: 6154877865
-  nfiles: 6
-  hash: md5
+- hash: md5
   path: data
+  files:
+  - relpath: breed_mapping.csv
+    md5: 409615e880a17365d35a865d36286bba
+    size: 2090
+    cloud:
+      gcloud_remote:
+        etag: 0888e6caee98878b031001
+        version_id: '1737475564417800'
+  - relpath: processed/test/test_images.pt
+    md5: 2440cef0cb5eb3bdf8d6e215e6c339b9
+    size: 923641008
+    cloud:
+      gcloud_remote:
+        etag: 08d7a6e9dce6848b031001
+        version_id: '1737393385919319'
+  - relpath: processed/test/test_targets.pt
+    md5: dae71ea1ff1cbff55a9702355cf28566
+    size: 13429
+    cloud:
+      gcloud_remote:
+        etag: 08f0b2f4d2e5848b031001
+        version_id: '1737393096694128'
+  - relpath: processed/train/train_images.pt
+    md5: 867f5aba751fa12e3f7948b9c313272c
+    size: 4308112617
+    cloud:
+      gcloud_remote:
+        etag: 089dc093f2e7848b031001
+        version_id: '1737393699086365'
+  - relpath: processed/train/train_targets.pt
+    md5: 11c7ed9e40435fdaf1f7608f8a2493a5
+    size: 58426
+    cloud:
+      gcloud_remote:
+        etag: 0891c2f6d2e5848b031001
+        version_id: '1737393096728849'
+  - relpath: processed/validation/validation_images.pt
+    md5: b3354aef616da918e0253d99ade7cd7e
+    size: 923038926
+    cloud:
+      gcloud_remote:
+        etag: 08a0eb87dfe6848b031001
+        version_id: '1737393390613920'
+  - relpath: processed/validation/validation_targets.pt
+    md5: 8c4c28f0d134f663833a9eaf3ba693e7
+    size: 13459
+    cloud:
+      gcloud_remote:
+        etag: 08d7dcf4d2e5848b031001
+        version_id: '1737393096699479'

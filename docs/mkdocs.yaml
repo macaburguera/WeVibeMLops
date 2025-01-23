@@ -21,3 +21,13 @@ plugins:
 
 nav:
   - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Viewer: viewer.md
+  - About: about.md
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.tabbed
