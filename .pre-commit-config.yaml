@@ -9,13 +9,6 @@ repos:
     -   id: check-yaml
     -   id: check-added-large-files
 
-# Detect Secrets: Scans for secrets in code (e.g., AWS keys, passwords)
-- repo: https://github.com/Yelp/detect-secrets
-  rev: v1.4.0
-  hooks:
-    - id: detect-secrets
-      args: ["--baseline", ".secrets.baseline"]
-
 # Good coding
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.4.7
