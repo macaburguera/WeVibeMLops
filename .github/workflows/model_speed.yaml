@@ -37,6 +37,14 @@ jobs:
         run: |
           mkdir -p data/processed/train
           mkdir -p data/processed/validation
+      
+      - name: Configure GCP credentials
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GDRIVE_CREDENTIALS }}
+        run: |
+          echo "$GCP_SERVICE_ACCOUNT_KEY" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
+        shell: bash
 
       - name: Test model performance
         run: |
