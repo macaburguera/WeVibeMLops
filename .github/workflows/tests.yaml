@@ -109,6 +109,8 @@ jobs:
       - name: Configure DVC and Google Drive
         run: |
           dvc pull models/resnet_model.pth --no-run-cache -v
+          dvc pull data/breed_mapping.csv --no-run-cache -v
+
 
 
       - name: Run tests & coverage
