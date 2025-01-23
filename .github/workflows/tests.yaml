@@ -9,6 +9,7 @@ on:
       - main
 
 jobs:
+
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
@@ -81,11 +82,16 @@ jobs:
           rm -rf .pytest_cache
         shell: bash
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
         with:
-          project_id: dog-breed-classifier-45
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
 
       - name: Run tests & coverage
         run: |
