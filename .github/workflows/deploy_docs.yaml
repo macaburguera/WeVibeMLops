@@ -29,4 +29,9 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Deploy docs
-      run: mkdocs gh-deploy --force
+      run: |
+        cd docs
+        pip install mkdocs
+        pip install mkdocs-material
+        pip install mkdocstrings
+        mkdocs gh-deploy --force
