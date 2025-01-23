@@ -88,6 +88,7 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+        shell: bash
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
@@ -104,14 +105,14 @@ jobs:
           else
             echo "DVC repository already initialized."
           fi
+        shell: bash
 
       # Step 5: Configure Google Drive and Pull Data
       - name: Configure DVC and Google Drive
         run: |
           dvc pull models/resnet_model.pth --no-run-cache -v
           dvc pull data/breed_mapping.csv --no-run-cache -v
-
-
+        shell: bash
 
       - name: Run tests & coverage
         run: |

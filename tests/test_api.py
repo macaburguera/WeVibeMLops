@@ -38,7 +38,6 @@ def test_predict_valid_image(mock_open):
             assert isinstance(response_json["predicted_breed"], str)  # Ensure the result is a string
 
 
-
 def test_predict_missing_file():
     """
     Test the /predict/ endpoint without uploading any file.
