@@ -85,6 +85,7 @@ jobs:
         env:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
+          pip install gcloud
           echo "$GCP_SERVICE_ACCOUNT_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
           gcloud auth activate-service-account --key-file=gcp-key.json
