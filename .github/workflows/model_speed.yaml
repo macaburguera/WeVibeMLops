@@ -3,11 +3,9 @@ name: Test Model Performance
 on:
   push:
     branches:
-      - main
       - maca
   pull_request:
     branches:
-      - main
       - maca
 
 jobs:

@@ -22,3 +22,6 @@ streamlit
 fastapi
 requests
 prometheus
+mkdocs
+mkdocstrings
+mkdocs-material
