@@ -75,7 +75,7 @@ jobs:
           pip list
           pip install dvc
           pip install dv[gs] 
-        shell: bash  # Ensures the script uses bash on all platforms
+        shell: bash
 
       - name: Prepare data directory
         run: |
@@ -88,7 +88,6 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
-        shell: bash
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
