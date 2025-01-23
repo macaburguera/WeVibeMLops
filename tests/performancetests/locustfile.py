@@ -1,4 +1,3 @@
-import os
 from locust import HttpUser, between, task
 
 class DogBreedClassifierUser(HttpUser):
