@@ -143,7 +143,11 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- We used Albumentations in our project to perform advanced image augmentations and effectively extend the variability of the dataset. Also used Optuna for hyperparameter optimization to fine-tune model architecture, learning rates, and training configurations. Lastly we used TIMM in our project to access a variety of pretrained models and well-known architectures, from which we finally selected Resnet as our base architecture ---
+---
+We used Albumentations in our project to perform advanced image augmentations and effectively extend the variability of the dataset. Additionally we used TIMM in our project to access a variety of pretrained models and well-known architectures, from which we finally selected Resnet as our base architecture.
+
+This has allowed us to significally augment our dataset, generating from each training image two variants combining affine transformations (scaling,rotating, shear) with color/noise transformations (histogram equalization, noise addition, brightness/contrast variations). This package has made really easy the application of such advanced transforms, leading to a pretty varied dataset to which we have trained our models against.
+ ---
 
 ## Coding environment
 
@@ -199,21 +203,19 @@ As explained in the main README.md file of our project, the reccommended way of 
 
 We preserved most of the cookiecutter template, with some slight modifications. We deleted the notebooks folder, as we didn't use any notebook, and added two additional folders:
 
-- /scripts: includes two bash scripts that may serve useful to run all the complete pipeline (including the preprocessing from the very raw data) and another one that is used in the build dockerfile as entrypoint.
-- /raw: this folder is not tracked, so it doesn't apear in the repository (same happens with data/ and models/ which are tracked via dvc) but if downloaded it contains the raw dataset data. The data/ folder, on the other side, contains the preprocesed data well-prepared and separated in /train, /validation and /test blocks.
+- /scripts: includes two bash scripts that may serve useful to run all the complete pipeline and another one that is used in the build dockerfile as entrypoint.
+- /raw: this folder is not tracked, so it doesn't apear in the repository (same happens with data/ and models/) but if downloaded it contains the raw dataset. The data/ folder, on the other side, contains the preprocesed data.
 
-Additionally, we include in our repository two dvc files: one for tracking the preprocessed data (data.dvc) and the models (models.dvc). These files are complemented with the .dvc folder, from which we just sync in github the config file with the information of our remote data.
+Additionally, we include in our repository two dvc files: one for tracking the preprocessed data (data.dvc) and the models (models.dvc). These files are complemented with the .dvc folder, from which we just sync in github the config file.
 
 The rest of the structure follows the provided template:
 
 - /.github for workflow files
 - /configs for storing different model setups, and parameter sweep configurations
-- /dockerfiles for storing different dockerfiles (build, train, data, api, frontend, drift and an additional run_all)
+- /dockerfiles for storing different dockerfiles
 - /reports includes this report
-- /src/dog_breed_classifier includes the source code for each step: data, model, train, api, frontend and data_drift. We have not used either evaluate.py nor visualize.py, so we have deleted it.
+- /src/dog_breed_classifier includes the source code for each step. We have not used either evaluate.py nor visualize.py, so we have deleted it.
 - /tests for unit tests
-
-We also used the pyproject.toml approach for managing dependencies, both requirement files, .gitignore, the pre-commit configuration yaml and a proper README.md file.
 
  ---
 
@@ -258,18 +260,14 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 7 fill here
+---
 
-used pytest. 14 tests, three for data, five for model, three for train, two for the api, an additional for  model speed
+- Three tests for the data processing code, checking that the images are preprocessed and split correctly, and with valid transformations.
+- Five tests for the model architecture, checking its initialization, forward pass, reaction to invalid inputs, parameters and resnet loading. We focused here as it is the most difficult part to detect failures.
+- Three tests for the train script, to verify its initialization, dataset loading and train loop.
+- Two tests for the API, checking robustness against different inputs.
 
-We have implemented a total of total tests on the most crucial parts of our model:
-
-- Three tests for the data processing code, checking that the images are preprocessed step by step as specified, that the albumentations transformations are valid and the data is correctly split.
-- Five tests for just the model architecture, checking its initialization, forward pass, reaction to invalid inputs, validity of parameters and correct backbone loading. We focused most here as we consider it is the most difficult part to detect failures, as they may not "appear" while running the code but rather lead directly to poor results coming from mistakes in this architecture.
-- Three tests for the train script, to verify its initialization, the dataset loading operation and the complete train loop. We used the "local" variant (without wandb) to ease up the test and go straight to the key parts.
-- Two tests for the API, checking its robustness against different inputs.
-
-Additionally we implemented a performance test of the model, to ensure that inference takes a reasonable time. We established 5 seconds as a limit, and it is correctly working.
+Additionally we implemented a performance test of the model, to ensure that inference takes a reasonable time.
 
 ---
 
@@ -286,20 +284,7 @@ Additionally we implemented a performance test of the model, to ensure that infe
 >
 > Answer:
 
---- question 8 fill here
-
-Name                                     Stmts   Miss  Cover   Missing
-----------------------------------------------------------------------
-src/dog_breed_classifier/__init__.py         0      0   100%
-src/dog_breed_classifier/api.py            107     35    67%   44, 56, 73-85, 89-92, 101-105, 120-133, 137, 147, 174-185
-src/dog_breed_classifier/data.py           100     27    73%   17-38, 69-71, 92-93, 125, 167-171, 174
-src/dog_breed_classifier/data_drift.py      45     45     0%   1-85
-src/dog_breed_classifier/frontend.py        19     19     0%   1-31
-src/dog_breed_classifier/model.py           20      6    70%   47-56
-src/dog_breed_classifier/train.py          139     34    76%   23-25, 30, 47, 54, 107, 152-162, 167-169, 174-176, 181-197, 202-203, 206
-----------------------------------------------------------------------
-TOTAL                                      430    166    61%
-
+---
 
 The final coverage we have achieved is 61%, being quite far from the 100% mainly because we have two files where we have not implemented it: the frontend and the data_drift code, which is not crucial for the main pipeline. Without counting them, we have achieved pretty good coverages in the files we have treated, achieving a 67% in the API as the lower, and a 76% coverage in the train code.
 
@@ -339,7 +324,7 @@ Yes, we used both. To be honest, we started with just the main branch, but as co
 >
 > Answer:
 
---- question 10 fill here
+---
 
 Yes, we used DVC to keep track of our pre-processed data and our model, even though later on we added wandb for model logging. We started using google Drive and then switched to a Cloud bucket, as it eased up working within the GCloud environment.
 
@@ -364,60 +349,19 @@ In practice, it helped us as we avoided wasting time and local storage space by 
 >
 > Answer:
 
---- question 11 fill here
-
-We have organized our continuous integration setup around Github Actions, in separate files aimed at different purposes.
+---
 
 On the first place, we have two minor workflows aimed at checking basic functionality, that are conditionally run on every push action to the development branch.
 
 The first one is the tests_data.yaml workflow, which checks that the DVC system is correctly setup in our repository and each new user can pull the data easily without failures. Specifically, this one is just triggered when there is a change in the data files (in the .dvc config or .dvc files), to avoid unnecessary checks.
 
-The other one is the model_speed.yaml workflow, which rather than just performing a "speed check" serves as a similar check as the tests_data workflow: it verifies that the latest model can be synced from WANDB and run correctly within the speed limits. We added this check after adding wandb support to our code, as we wanted to verify that the wandb setup works. For this reason, we had to provide the wandb API key and model name as environment variables in the code loaded from Github Secrets, to avoid integrating this confidential information inside the code, as can be seen here:
+The other one is the model_speed.yaml workflow, which rather than just performing a "speed check" it also verifies that the latest model can be synced from WANDB and run correctly within the speed limits. We added this check after adding wandb support to our code, as we wanted to verify that the wandb setup works. For this reason, we had to provide the wandb API key and model name as environment variables in the code loaded from Github Secrets, to avoid integrating this confidential information inside the code.
 
-```
-  test_model:
-    name: Test Model Performance
-    runs-on: ubuntu-latest
-    env:
-      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
-      WANDB_MODEL_NAME: ${{ secrets.WANDB_MODEL_NAME }}
-```
-
-Then, we have our main, toughest workflow, tests.yaml, which is only executed on pull requests for the main branch. It first checks some linting with flake8, which is quite strict (at the end we decided to skip some code errors that we considered negligible), and if it succeeds, it verifies the whole pipeline in the main three operating systems: Mac OS, Windows and Linux. It basically performs these actions:
-
-- Checkout the branch
-- Install the environment
-- Pull the preprocessed data and the models from the dvc
-- Runs all the unit tests
+Then, we have our main, toughest workflow, tests.yaml, which is only executed on pull requests for the main branch. It first checks some linting with flake8, which is quite strict (at the end we decided to skip some code errors that we considered negligible), and if it succeeds, it verifies the whole pipeline in the main three operating systems: Mac OS, Windows and Linux, running all unit tests.
 
 For ensuring that our workflow file would run on all operating systems, we implemented two key solutions:
-- We first forced all the actions to use the Linux Bash as command line, so that we could write all the commands we need to execute in the same format (Bash)
-- We introduced a conditional to perform the pytorch installation properly depending on the system.
-
-This can be seen in the first part of the installation & setup task:
-
-      - name: Install dependencies
-        run: |
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            echo "Installing PyTorch with CUDA for Linux"
-            pip install torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cu118
-          else
-            echo "Installing CPU-only PyTorch for Windows/macOS"
-            pip install torch torchvision
-          fi
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements_dev.txt
-          pip install tomli
-          pip install coverage
-          pip install pytest
-          pip install -e .
-          pip list
-          pip install dvc
-          pip install dv[gs]
-        shell: bash
-
-Additionally, we setup our google Cloud credentials via github Secrets, as well as the wandb ones, as we check them as well during the model performance test (as explained before).
+- We first forced all the actions to use the Linux Bash as command line (Bash)
+- We introduced a conditional to perform the pytorch installation depending on the system.
 
 ---
 
@@ -438,18 +382,15 @@ Additionally, we setup our google Cloud credentials via github Secrets, as well 
 >
 > Answer:
 
---- question 12 fill here
+---
 We used a very simple approach, where we take advantage of both config files and wandb logging.
 
-First of all, our training script is able to run in three different modes:
-- local, with no wandb connection, used to do quick local tests.
-- wandb-run, single training run (one set of parameters), logging both the parameters setup and the model to wandb.
-- sweep, taking a sweep.yaml file that configures up a set of parameters to try. Each run is also logged into wandb.
+Our training script is able to run in three different modes:
+- local, with no wandb connection
+- wandb-run, logging both the parameters setup and the model to wandb.
+- sweep, parameter sweep with wandb
 
-
-This way, when someone wanted to run a "public" experiment, he just logged into wandb setting up his own WANDB_API_KEY and our WANDB_MODEL_NAME, established the parameters in the corresponding YAML files (either single-run, config.yaml, or sweep, sweep.yaml) and executed the run with the desired argument. For example, to run a sweep: `python src/dog_breed_classifier/train.py sweep`.
-
-With this approach, as the model is logged via wandb, and after the experiment we could access to whatever specific run/version of the model we wanted, checking both its performance in terms of loss/accuracy, iterations run and other hyperparameters of the model.
+This way, when someone wanted to run a "public" experiment, he just logged into wandb setting up his WANDB_API_KEY and our WANDB_MODEL_NAME, set up the YAML files (either config.yaml, or sweep.yaml) and executed the run with the desired argument. For example: `python src/dog_breed_classifier/train.py sweep`.
  ---
 
 ### Question 13
@@ -465,8 +406,7 @@ With this approach, as the model is logged via wandb, and after the experiment w
 >
 > Answer:
 
---- question 13 fill here
-
+---
 As explained in the previous question, we took complete advantage of the wandb model registry to keep track of all our model iterations, versions and experiments. As literally all the experiments we wanted were logged there, in case we wanted to reproduce a specific version we would just:
 
 - Go to our wandb project page
@@ -491,16 +431,18 @@ As explained in the previous question, we took complete advantage of the wandb m
 >
 > Answer:
 
---- question 14 fill here
+---
 
 As explained before, we have completely taken advantage of the wandb logging features. As can be seen in the figure, we have run different experiments varying basic hyperparameters during training: batch size, number of epochs, learning rate and model (we tested both resnet50 and resnet18).
 
-[figure1](figures/wandb-experiments.png)
+![figure1](figures/wandb-experiments.png)
 
 
 We tracked both training and validation loss and accuracy, as well as runtime for contrasing efficiency. An example of these metrics from the last experiments can be seen in the following figure:
 
-[figure2](figures/wandb_graphs.png)
+![figure2](figures/wandb_graphs.png)
+
+The image shows how our model is able to achieve pretty good results with quite few epochs of training, in most cases. It also shows how there is a pretty observable difference between train and validation metrics, showing a slight overfitting.
 
 We contrasted consistently the difference in both loss and accuracy between both sets, discarding those iterations with a higher training performance
 but a significant difference with respect to the validation dataset, trying to minimize the overfitting present in our models. For this reason we also started testing with a pretty low number of iterations, as we verified that for the best setups after the fifth iteration or so the model just overfits, with no further improvement in validation metrics.
@@ -520,7 +462,7 @@ but a significant difference with respect to the validation dataset, trying to m
 >
 > Answer:
 
---- question 15 fill here
+---
 
 We used docker as a straightforward way to copy either our complete environment or rather some specific parts that don't need everything (eg the frontend), having the advantage that in the cases that you need to install torch it is self-contained in the base image, so there is no need to even search for your system requirements. Additionally, and most important, we used those different dockerfiles to deploy our application to gcloud, so that it runs there without even need for installation. This way, the application is completely usable without further need to even download things.
 
@@ -564,7 +506,11 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 16 fill here ---
+---
+
+We performed debugging with a quite basic approach, inserting "print" self-explainable statements on every action performed on the code. We could trace most bugs by inspecting them and adding some where necessary. Some members also took advantage of the built-in features in vscode, as they are super straightforward to use, using mainly breakpoints to get deeper into the areas of code where we suspected we had some bugs. We did not integrate any specific profiling additional tools into our codes due to lack of time, but we know it would be a very convenient way of optimizing the data generation script. Our approach proved to be sufficient in terms of coding, being able to identify where the code was getting stuck and the different values and formats of the variables involved in these situations.
+
+---
 
 ## Working in the cloud
 
@@ -581,7 +527,16 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 17 fill here ---
+--- question 17 fill here
+
+After some testing, we have finally implemented correctly in our system the following services:
+
+- Bucket: to serve as remote storage of both our processed data and last model (as a backup to wandb), integrated into our DVC system.
+- Engine: we did some training runs on a VM instance of Engine, but for our models it proved to be sufficient to train locally in a laptop of one of the members of the team, which had a modest Nvidia GPU that proved enough.
+- Cloud Run: here we have deployed our API and frontend images, that are running standalone there in the cloud.
+- Monitoring: we set up some monitoring for our application and configured some basic alerts regarding workload. Haven't got many notifications, as this is not truly public.. but we left it there, just in case our fancy dog classifier goes viral.
+
+ ---
 
 ### Question 18
 
@@ -596,7 +551,16 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 18 fill here ---
+--- question 18 fill here
+As said before, in our case we did not use that much Engine, but still we created a VM instance with the purpose of training our model there, with wandb monitoring enabled to be able to see live what is happening in the machine without need for further interaction.
+
+We created this machine, "big-doge", as shown in the image: we had to use europe-central2-c as zone, as the other suggested northern/central european zones were giving problems when trying to connect to a reasonable GPU. We equipped our machine with 25 Gb (plenty of space just in case we wanted to download various sources of data/models locally) and a Nvidia T4 GPU.
+
+![figure3](figures/big_doge.png)
+
+To install everything, we first built our train image locally, then pushed it to Cloud and inside this virtual machine we pulled it. So we did training there. However, this approach did not give us much benefit in terms of training time so at the end we just kept training locally and streaming results/logs into wandb.
+
+ ---
 
 ### Question 19
 
@@ -605,7 +569,19 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 19 fill here ---
+--- question 19 fill here
+
+The GCP bucket has proven super useful. We were a bit reluctant to integrate it because we were working fine at the beginning with GDrive, but we don't regret it. We started it as just our DVC storage medium (data/processed and models) but we also added/stored there additional useful data:
+- the original dataset with its labels
+- an extended version including key metrics, for data drifting analysis
+- the breed mapping csv
+- a csv for logging every prediction entering into the system, with some metrics calculated for further data drifting analysis
+- the data drift reports folder
+- a folder with all the images that are queried to the system
+
+![figure4](figures/bucket.png)
+
+ ---
 
 ### Question 20
 
@@ -614,7 +590,12 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 20 fill here ---
+--- question 20 fill here
+Here are all the images we have uploaded to the registry, each with a different functionality:
+
+![figure5](figures/registry.png)
+
+ ---
 
 ### Question 21
 
@@ -623,7 +604,13 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 21 fill here ---
+--- question 21 fill here
+
+We wanted to automate the build-up for the training process, but as our files were pretty big it was building up very slowly, so at the end we built locally and pushed manually when we wanted. Here an example:
+
+![figure6](figures/build_fail.png)
+
+---
 
 ### Question 22
 
@@ -638,7 +625,11 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 22 fill here ---
+--- question 22 fill here
+
+Yes, as explained in one of the previous questions, we managed to do so, even though we didn't keep using it much because we didn't consider it worth it in our application. We chose the Engine because we found it pretty flexible, and as we had the docker images ready, it was easy to pull the train image down to our VM and trigger there the training. It was also useful because sometimes while experimenting we changed things on-the-fly, and we could do this thanks to using a complete VM environment. Sometimes we would inspect or check the parameters files before triggering the training, to be sure or to modify them before a run. But however, we ended up just training locally.
+
+ ---
 
 ## Deployment
 
@@ -655,7 +646,18 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 23 fill here ---
+--- question 23 fill here
+
+Yes, we wrote a small fastAPI-based API for our model, equipped it with some Prometheus metrics and some logging features for enabling us further data drifting inspection. It works as this:
+
+1. Loads all the necessary data from the bucket: the model, the breed mapping csv and a prediction log, also in csv format. If this log doesn't exist, it creates it.
+2. For each /predict request, it takes the image, verify its format, do the inference with the model and return the corresponding breed name.
+3. After this basic inference, it saves several metrics from the prediction skills of the model (eg inference time), from other errors that could happen (using Prometheus) and also computes image-related metrics from the requested image: mean, std deviation and median of the pixels, minimum and maximum value, entropy and edge density. These metrics were also computed for the complete dataset, and are used to perform data drifting analysis.
+4. Updates the log file and uploads it again to the bucket.
+
+Our API runs by default on port 8000.
+
+---
 
 ### Question 24
 
@@ -671,7 +673,23 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 24 fill here ---
+--- question 24 fill here
+
+Yes. We first tested locally, running our API in localhost:8000. We downloaded some random dogs photos from the internet and checked the API was working from the command line, asking for the /predict endpoint. For example, with an image we had of a golden retriever we would run:
+
+`curl -X POST -F "file=@golden.jpg" http://0.0.0.0:8000/predict/`
+
+We then deployed the API (just the API) to the cloud: we built the api docker image and pushed it to cloud run, so that we would had it running there. Then, we checked again with the command line, but instead of to localhost we used the cloud based URL:
+
+`curl -X POST -F "file=@golden.jpg" https://doge-api-414169417184.europe-west1.run.app/predict/`
+
+As can be seen, it returns the prediction, and now that we have finished with the development it returns as well image metrics. Originally it just returned the predicted breed.
+
+![figure7](figures/api1.png)
+
+It worked, so we continued.
+
+ ---
 
 ### Question 25
 
@@ -686,7 +704,14 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 25 fill here ---
+--- question 25 fill here
+
+Yes, we implemented some basic unit testing on our API, as explained before in the unit testing questions. It covered basic aspects of the API, such as its ability to handle the input files, and verified the API returned valid predictions. This is a bit basic, so we further relied on cloud metrics inspection and alerts to get a better overall idea of how our application was working.
+
+We also did some load testing with Locust, checking both our API running in local mode and our cloud-deployed API. The results locally were brilliant, but of course the cloud deployed API was substantially slower. Didn't test it until its last limit, but we performed a load test for one minute with a slight increase of requests through time and we got enough good results. The response time was constant (except for some peaks at the beginning) and pretty fast, as shown in the image (corresponding to the cloud load test).
+
+![figure8](figures/locuscloud.png)
+---
 
 ### Question 26
 
@@ -701,7 +726,15 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 26 fill here ---
+--- question 26 fill here
+
+Yes, we implemented some monitoring. The most basic approach we've implemented is the prediction log system we have mentioned on previous questions, enabling us to monitor data drifting which is a kind of monitoring that needs to be set up on purpose (as it is very dependant on the data type the system is using).
+
+Aditionally we implemented some Prometheus metrics, but very basic ones: a log for the classification times, an error counter, a request counter and a file size log. We checked we could access these metrics online, by accessing the /metrics/ endpoint of the API. We would have liked to develop a nicer frontend for it, as it would help visualizing for example the histogram for response times... but we left the raw API as it is, as we did not consider it a priority and we had also access to Cloud Metrics.
+
+In practice, we mainly used the Metrics section of Cloud Run to have an overview of how our API is behaving. We also set up an alert so that we could receive an email in case the model receives an unexpected amount of visits per second.
+
+ ---
 
 ## Overall discussion of project
 
@@ -736,7 +769,19 @@ Additionally, we developed a dockerfile for being able to test online the possib
 >
 > Answer:
 
---- question 28 fill here ---
+---
+
+The data drifting policy has been directly integrated into our main API application, keeping a log of several image metrics and saving them into a csv stored in our bucket. We developed another script, data_drift.py, that takes this log and compares it with our original dataset, for which we have as well computed its image metrics. This script uses some of the evidently package utilities to compare statistically both samples and generate a report, as can be seen in the image.
+
+![figure9](figures/drift.png)
+
+We took with a grain of salt this detected drift, as at this moment both samples (reference and predictions) are not even comparable: we have been testing 20 images as much, and comparing to the complete dataset the scope is pretty limited. A good approach to improve the quality of this comparison would be to get a way bigger prediction set by scraping continuously the internet for dogs images and passing them to the API.
+
+We implemented the frontend with streamlit, building a simple interface where each user can upload an image of a dog to predict its breed, and the frontend would show the response from the API in the form of breed name.
+
+![figure10](figures/frontend.png)
+
+---
 
 ### Question 29
 
