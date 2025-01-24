@@ -520,7 +520,36 @@ but a significant difference with respect to the validation dataset, trying to m
 >
 > Answer:
 
---- question 15 fill here ---
+--- question 15 fill here
+
+We used docker as a straightforward way to copy either our complete environment or rather some specific parts that don't need everything (eg the frontend), having the advantage that in the cases that you need to install torch it is self-contained in the base image, so there is no need to even search for your system requirements. Additionally, and most important, we used those different dockerfiles to deploy our application to gcloud, so that it runs there without even need for installation. This way, the application is completely usable without further need to even download things.
+
+First, we built up our train.dockerfile image, which:
+- copies the repository
+- installs dependencies
+- pulls the preprocessed data from the cloud
+- trains a model (its entrypoint is the train script)
+- pushes the model to wandb, providing detailed logs on that run
+
+We also have an alternate version, build.dockerfile, which just builds the environment and has no specific entrypoint, it just logs into the Bash terminal.
+
+Additionally, we developed a dockerfile for the API with the following setup:
+
+- copy the API code and some essential files from the repo (dvc support)
+- pulls the last version of the model and a mapping csv from tha /data folder that maps each breed's ID to its corresponding name (eg: 49=golden-retriever).
+- leaves the API running in the port 8000 of the machine
+
+We need to address this port while running this image:
+
+`docker run -p 8080:8000 api:v1.0`
+
+We tagged and uploaded this image to google cloud, so that our API is running there constantly.
+
+The other important image we have is the frontend one, which just installs very basic requirements and runs the frontend. We programmed the frontend script to connect directly to the deployed API in gcloud. Later on, we also tagged and uploaded this frontend image to the Cloud, so it is running constantly there taking advantage of the previously deployed API. It can be checked [here](https://frontend-414169417184.europe-west1.run.app).
+
+Additionally, we developed a dockerfile for being able to test online the possible data drifting issues our model could have through time. It checks the model via our deployed API and saves the data in a reports folder that is stored in the project's gcloud bucket.
+
+ ---
 
 ### Question 16
 
