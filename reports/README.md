@@ -556,7 +556,7 @@ As said before, in our case we did not use that much Engine, but still we create
 
 We created this machine, "big-doge", as shown in the image: we had to use europe-central2-c as zone, as the other suggested northern/central european zones were giving problems when trying to connect to a reasonable GPU. We equipped our machine with 25 Gb (plenty of space just in case we wanted to download various sources of data/models locally) and a Nvidia T4 GPU.
 
-![figure3](figures/big_doge.png)
+![figure3](figures/big-doge.png)
 
 To install everything, we first built our train image locally, then pushed it to Cloud and inside this virtual machine we pulled it. So we did training there. However, this approach did not give us much benefit in terms of training time so at the end we just kept training locally and streaming results/logs into wandb.
 
