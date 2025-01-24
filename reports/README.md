@@ -748,7 +748,7 @@ In practice, we mainly used the Metrics section of Cloud Run to have an overview
 
 ---
 
-Attila (s242965) used xx $, Matyas used xx $ and Maca (s243296) used 1.13$. The most expensive service we used has been Cloud Run, taking around 50% of the credits. Then we spent around 40% on Compute Engine, then 5% on the artifact registry and the remaining amount is divied between Networking and Cloud Storage.
+Attila (s242965) used 0.3$, Matyas used 0.27$ and Maca (s243296) used 1.13$. The most expensive service we used has been Cloud Run, taking around 50% of the credits. Then we spent around 40% on Compute Engine, then 5% on the artifact registry and the remaining amount is divied between Networking and Cloud Storage.
 
 It makes sense that Cloud Run is the most expensive one, as it has been running online since the last week and all the tests we have done all our API tests with the deployed version. Engine costed more than expected, as we honestly haven't used it that much. On the other side, the Storage has resulted pretty cheap.
 
@@ -799,8 +799,17 @@ We implemented the frontend with streamlit, building a simple interface where ea
 
 ---
 
+![figure1](figures/architecture.png)
 
+On the local side, the developer set up the machine learning project on a local device (laptop) using various tools to ensure efficient development and maintenance: Anaconda was employed for managing Python environments, while Hydra facilitated streamlined configuration management for different program runs. Cookiecutter was used to structure the project data effectively, and later on Wandb enabled comprehensive logging and visualizations during model training. A simple API was developed in fastAPI, checking it first on localhost, and on the top of it a simple Streamplit frontend was developed.
 
+On this local stage all the necessary data was stored locally, with an option to fetch data from the cloud (DVC gcloud storage) if no local data was available. Additionally, the developer created Docker image files locally, which were later utilized on the cloud side.
+
+Before deploying, several unit tests were implemented first locally, and once passed, they were used in addition to other kind of tests in the form of Github Workflows, ensuring at every push and/or pull request that the uploaded code was fully functional.
+
+The separate docker images (build, train, api, frontend) were pushed to the team's google artifact registry, from which finally the API and the frontend were deployed and made publicly available.
+
+On top of that, several monitoring tools were developed and/or used for checking the performance and behaviour of the deployed components, monitoring especially the API.
 
 ---
 
@@ -824,7 +833,7 @@ First one has been actually to keep track of each development stage of the proje
 
 That got a bit better with the Docker files development, which helped a lot with environment setup but were also pretty complicated to setup correctly, especially when dealing with ports, GPU access and secret management.
 
-The worst part by far, even though now is the one that runs more smoothly, is all the Cloud setup: it was a bit frustrating the fist times to manage the credentials, roles and authentications needed to wor with google cloud.
+The worst part by far, even though now is the one that runs more smoothly, is all the Cloud setup: it was a bit frustrating the first times to manage the credentials, roles and authentications needed to wor with google cloud.
 
 Regarding the cloud, we would have wanted to finally automate the image buildup process, but we found it to need much more time to fix than we had and we decided to go on deploying the docker images manually and focus on other things, such a nice API and frontend deployment.
 
@@ -851,7 +860,7 @@ We have to say as well that we found pretty hard to manage a proper, smooth inte
 
 Student s242965 managed the GitHub in the beginning with all the necessary accesses being handed out, and handing in the assignments. Also helped to make some tests, documentation, pre-commit hooks and some triggers to the GitHub repo.
 
-s249246 managed mostly the cloud deployment and DVC setup, being in constant communication with s242965 for managing the Actions and workflows.
+s249246 managed mostly the cloud deployment and DVC setup, being in constant communication with s242965 for managing the Actions and workflows, as well as the API and its instrumentation.
 
 s242962 managed most of the base code (data processing, model, train script) and unit tests.
 
