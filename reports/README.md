@@ -129,7 +129,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- s249246, attila, matyas  ---
+--- s249246, s242965, s242962  ---
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -464,22 +464,11 @@ but a significant difference with respect to the validation dataset, trying to m
 
 ---
 
-We used docker as a straightforward way to copy either our complete environment or rather some specific parts that don't need everything (eg the frontend), having the advantage that in the cases that you need to install torch it is self-contained in the base image, so there is no need to even search for your system requirements. Additionally, and most important, we used those different dockerfiles to deploy our application to gcloud, so that it runs there without even need for installation. This way, the application is completely usable without further need to even download things.
-
-First, we built up our train.dockerfile image, which:
-- copies the repository
-- installs dependencies
-- pulls the preprocessed data from the cloud
-- trains a model (its entrypoint is the train script)
-- pushes the model to wandb, providing detailed logs on that run
-
+We used docker as a straightforward way to copy either our complete environment or rather some specific parts that don't need everything (eg the frontend). Additionally, and most important, we used those different dockerfiles to deploy our application to gcloud, so that it runs there without even need for installation.
+This way, the application is completely usable without further need to even download things.
 We also have an alternate version, build.dockerfile, which just builds the environment and has no specific entrypoint, it just logs into the Bash terminal.
 
-Additionally, we developed a dockerfile for the API with the following setup:
-
-- copy the API code and some essential files from the repo (dvc support)
-- pulls the last version of the model and a mapping csv from tha /data folder that maps each breed's ID to its corresponding name (eg: 49=golden-retriever).
-- leaves the API running in the port 8000 of the machine
+Additionally, we developed a dockerfile for the API, which leaves it running in the port 8000.
 
 We need to address this port while running this image:
 
@@ -487,9 +476,9 @@ We need to address this port while running this image:
 
 We tagged and uploaded this image to google cloud, so that our API is running there constantly.
 
-The other important image we have is the frontend one, which just installs very basic requirements and runs the frontend. We programmed the frontend script to connect directly to the deployed API in gcloud. Later on, we also tagged and uploaded this frontend image to the Cloud, so it is running constantly there taking advantage of the previously deployed API. It can be checked [here](https://frontend-414169417184.europe-west1.run.app).
+The other important image we have is the frontend one, which just installs very basic requirements and runs the frontend. Later on, we also tagged and uploaded this frontend image to the Cloud. It can be checked [here](https://frontend-414169417184.europe-west1.run.app).
 
-Additionally, we developed a dockerfile for being able to test online the possible data drifting issues our model could have through time. It checks the model via our deployed API and saves the data in a reports folder that is stored in the project's gcloud bucket.
+Additionally, we developed a dockerfile for being able to test online the possible data drifting issues our model could have through time.
 
  ---
 
@@ -527,7 +516,7 @@ We performed debugging with a quite basic approach, inserting "print" self-expla
 >
 > Answer:
 
---- question 17 fill here
+---
 
 After some testing, we have finally implemented correctly in our system the following services:
 
@@ -551,7 +540,7 @@ After some testing, we have finally implemented correctly in our system the foll
 >
 > Answer:
 
---- question 18 fill here
+---
 As said before, in our case we did not use that much Engine, but still we created a VM instance with the purpose of training our model there, with wandb monitoring enabled to be able to see live what is happening in the machine without need for further interaction.
 
 We created this machine, "big-doge", as shown in the image: we had to use europe-central2-c as zone, as the other suggested northern/central european zones were giving problems when trying to connect to a reasonable GPU. We equipped our machine with 25 Gb (plenty of space just in case we wanted to download various sources of data/models locally) and a Nvidia T4 GPU.
@@ -569,7 +558,7 @@ To install everything, we first built our train image locally, then pushed it to
 >
 > Answer:
 
---- question 19 fill here
+---
 
 The GCP bucket has proven super useful. We were a bit reluctant to integrate it because we were working fine at the beginning with GDrive, but we don't regret it. We started it as just our DVC storage medium (data/processed and models) but we also added/stored there additional useful data:
 - the original dataset with its labels
@@ -590,7 +579,7 @@ The GCP bucket has proven super useful. We were a bit reluctant to integrate it 
 >
 > Answer:
 
---- question 20 fill here
+---
 Here are all the images we have uploaded to the registry, each with a different functionality:
 
 ![figure5](figures/registry.png)
@@ -604,7 +593,7 @@ Here are all the images we have uploaded to the registry, each with a different 
 >
 > Answer:
 
---- question 21 fill here
+---
 
 We wanted to automate the build-up for the training process, but as our files were pretty big it was building up very slowly, so at the end we built locally and pushed manually when we wanted. Here an example:
 
@@ -625,7 +614,7 @@ We wanted to automate the build-up for the training process, but as our files we
 >
 > Answer:
 
---- question 22 fill here
+---
 
 Yes, as explained in one of the previous questions, we managed to do so, even though we didn't keep using it much because we didn't consider it worth it in our application. We chose the Engine because we found it pretty flexible, and as we had the docker images ready, it was easy to pull the train image down to our VM and trigger there the training. It was also useful because sometimes while experimenting we changed things on-the-fly, and we could do this thanks to using a complete VM environment. Sometimes we would inspect or check the parameters files before triggering the training, to be sure or to modify them before a run. But however, we ended up just training locally.
 
@@ -646,7 +635,7 @@ Yes, as explained in one of the previous questions, we managed to do so, even th
 >
 > Answer:
 
---- question 23 fill here
+---
 
 Yes, we wrote a small fastAPI-based API for our model, equipped it with some Prometheus metrics and some logging features for enabling us further data drifting inspection. It works as this:
 
@@ -673,7 +662,7 @@ Our API runs by default on port 8000.
 >
 > Answer:
 
---- question 24 fill here
+---
 
 Yes. We first tested locally, running our API in localhost:8000. We downloaded some random dogs photos from the internet and checked the API was working from the command line, asking for the /predict endpoint. For example, with an image we had of a golden retriever we would run:
 
@@ -704,13 +693,14 @@ It worked, so we continued.
 >
 > Answer:
 
---- question 25 fill here
+---
 
 Yes, we implemented some basic unit testing on our API, as explained before in the unit testing questions. It covered basic aspects of the API, such as its ability to handle the input files, and verified the API returned valid predictions. This is a bit basic, so we further relied on cloud metrics inspection and alerts to get a better overall idea of how our application was working.
 
 We also did some load testing with Locust, checking both our API running in local mode and our cloud-deployed API. The results locally were brilliant, but of course the cloud deployed API was substantially slower. Didn't test it until its last limit, but we performed a load test for one minute with a slight increase of requests through time and we got enough good results. The response time was constant (except for some peaks at the beginning) and pretty fast, as shown in the image (corresponding to the cloud load test).
 
 ![figure8](figures/locuscloud.png)
+
 ---
 
 ### Question 26
@@ -726,7 +716,7 @@ We also did some load testing with Locust, checking both our API running in loca
 >
 > Answer:
 
---- question 26 fill here
+---
 
 Yes, we implemented some monitoring. The most basic approach we've implemented is the prediction log system we have mentioned on previous questions, enabling us to monitor data drifting which is a kind of monitoring that needs to be set up on purpose (as it is very dependant on the data type the system is using).
 
@@ -753,7 +743,13 @@ In practice, we mainly used the Metrics section of Cloud Run to have an overview
 >
 > Answer:
 
---- question 27 fill here ---
+---
+
+Attila (s242965) used xx $, Matyas used xx $ and Maca (s243296) used 1.13$. The most expensive service we used has been Cloud Run, taking around 50% of the credits. Then we spent around 40% on Compute Engine, then 5% on the artifact registry and the remaining amount is divied between Networking and Cloud Storage.
+
+It makes sense that Cloud Run is the most expensive one, as it has been running online since the last week and all the tests we have done all our API tests with the deployed version. Engine costed more than expected, as we honestly haven't used it that much. On the other side, the Storage has resulted pretty cheap.
+
+---
 
 ### Question 28
 
@@ -798,7 +794,12 @@ We implemented the frontend with streamlit, building a simple interface where ea
 >
 > Answer:
 
---- question 29 fill here ---
+---
+
+
+
+
+---
 
 ### Question 30
 
@@ -812,7 +813,21 @@ We implemented the frontend with streamlit, building a simple interface where ea
 >
 > Answer:
 
---- question 30 fill here ---
+---
+
+We've had some important challenges we've faced during the project:
+
+First one has been actually to keep track of each development stage of the project, as during most of the time the things that were on the development branch were as that - development, so whoever wanted to retake the code from there, he basically inherited those "buggy" pieces.
+
+That got a bit better with the Docker files development, which helped a lot with environment setup but were also pretty complicated to setup correctly, especially when dealing with ports, GPU access and secret management.
+
+The worst part by far, even though now is the one that runs more smoothly, is all the Cloud setup: it was a bit frustrating the fist times to manage the credentials, roles and authentications needed to wor with google cloud.
+
+Regarding the cloud, we would have wanted to finally automate the image buildup process, but we found it to need much more time to fix than we had and we decided to go on deploying the docker images manually and focus on other things, such a nice API and frontend deployment.
+
+We have to say as well that we found pretty hard to manage a proper, smooth integration between github and gcloud, and we would have liked to work on that a bit more.
+
+---
 
 ### Question 31
 
@@ -829,4 +844,13 @@ We implemented the frontend with streamlit, building a simple interface where ea
 >
 > Answer:
 
---- question 31 fill here ---
+---
+
+Student s242965 managed the GitHub in the beginning with all the necessary accesses being handed out, and handing in the assignments. Also helped to make some tests, documentation, pre-commit hooks and some triggers to the GitHub repo.
+
+s249246 managed mostly the cloud deployment and DVC setup, being in constant communication with s242965 for managing the Actions and workflows.
+
+s242962 managed most of the base code (data processing, model, train script) and unit tests.
+
+
+---
