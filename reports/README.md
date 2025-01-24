@@ -258,7 +258,20 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 7 fill here ---
+--- question 7 fill here
+
+used pytest. 14 tests, three for data, five for model, three for train, two for the api, an additional for  model speed
+
+We have implemented a total of total tests on the most crucial parts of our model:
+
+- Three tests for the data processing code, checking that the images are preprocessed step by step as specified, that the albumentations transformations are valid and the data is correctly split.
+- Five tests for just the model architecture, checking its initialization, forward pass, reaction to invalid inputs, validity of parameters and correct backbone loading. We focused most here as we consider it is the most difficult part to detect failures, as they may not "appear" while running the code but rather lead directly to poor results coming from mistakes in this architecture.
+- Three tests for the train script, to verify its initialization, the dataset loading operation and the complete train loop. We used the "local" variant (without wandb) to ease up the test and go straight to the key parts.
+- Two tests for the API, checking its robustness against different inputs.
+
+Additionally we implemented a performance test of the model, to ensure that inference takes a reasonable time. We established 5 seconds as a limit, and it is correctly working.
+
+---
 
 ### Question 8
 
@@ -273,7 +286,26 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 8 fill here ---
+--- question 8 fill here
+
+Name                                     Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------
+src/dog_breed_classifier/__init__.py         0      0   100%
+src/dog_breed_classifier/api.py            107     35    67%   44, 56, 73-85, 89-92, 101-105, 120-133, 137, 147, 174-185
+src/dog_breed_classifier/data.py           100     27    73%   17-38, 69-71, 92-93, 125, 167-171, 174
+src/dog_breed_classifier/data_drift.py      45     45     0%   1-85
+src/dog_breed_classifier/frontend.py        19     19     0%   1-31
+src/dog_breed_classifier/model.py           20      6    70%   47-56
+src/dog_breed_classifier/train.py          139     34    76%   23-25, 30, 47, 54, 107, 152-162, 167-169, 174-176, 181-197, 202-203, 206
+----------------------------------------------------------------------
+TOTAL                                      430    166    61%
+
+
+The final coverage we have achieved is 61%, being quite far from the 100% mainly because we have two files where we have not implemented it: the frontend and the data_drift code, which is not crucial for the main pipeline. Without counting them, we have achieved pretty good coverages in the files we have treated, achieving a 67% in the API as the lower, and a 76% coverage in the train code.
+
+Even though, 100% coverage does not ensure perfect performance, as this type of unit testing only allows to handle specific logic predictable cases: output validity, case handling, correctness of different inputs/outputs. There are a lot of types of failures and malfunctions that lay deeper inside the code and cannot be detected with this kind of testing.
+
+---
 
 ### Question 9
 
@@ -288,7 +320,11 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 9 fill here ---
+--- question 9 fill here
+
+Yes, we used both. To be honest, we started with just the main branch, but as code started to get bigger we inmediately switched to another approach, where we would work on separate branches for development and do a pull request to the main branch just when we had a functional version of what we were doing at the moment. Additionally, it was be on this pull request where we performed the toughest, more exhaustive tests in github Actions (such as OS compatibility), to ensure that the merged version is perfectly usable at the moment.
+
+---
 
 ### Question 10
 
@@ -303,7 +339,15 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 10 fill here ---
+--- question 10 fill here
+
+Yes, we used DVC to keep track of our pre-processed data and our model, even though later on we added wandb for model logging. We started using google Drive and then switched to a Cloud bucket, as it eased up working within the GCloud environment.
+
+We had two separate dvc files: one for the data/processed folder, and another one for the models folder. In github we just keep track of these two folders and of the config file included in the .dvc folder, containing the most important configuration to be able to connect to the remote storage and download the desired files. This way, the user just has to `dvc pull` the desired data right after cloning the repo, without further need to setup manually other dvc configurations.
+
+In practice, it helped us as we avoided wasting time and local storage space by downloading and running the data.py script every time we installed the repo, as we could just pull the processed data straightforwardly. It was also very useful for model tracking, as we would only push the good versions we tested, and this way with each pull we ensured we had the latest, best version.
+
+---
 
 ### Question 11
 
@@ -320,7 +364,62 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 11 fill here ---
+--- question 11 fill here
+
+We have organized our continuous integration setup around Github Actions, in separate files aimed at different purposes.
+
+On the first place, we have two minor workflows aimed at checking basic functionality, that are conditionally run on every push action to the development branch.
+
+The first one is the tests_data.yaml workflow, which checks that the DVC system is correctly setup in our repository and each new user can pull the data easily without failures. Specifically, this one is just triggered when there is a change in the data files (in the .dvc config or .dvc files), to avoid unnecessary checks.
+
+The other one is the model_speed.yaml workflow, which rather than just performing a "speed check" serves as a similar check as the tests_data workflow: it verifies that the latest model can be synced from WANDB and run correctly within the speed limits. We added this check after adding wandb support to our code, as we wanted to verify that the wandb setup works. For this reason, we had to provide the wandb API key and model name as environment variables in the code loaded from Github Secrets, to avoid integrating this confidential information inside the code, as can be seen here:
+
+```
+  test_model:
+    name: Test Model Performance
+    runs-on: ubuntu-latest
+    env:
+      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+      WANDB_MODEL_NAME: ${{ secrets.WANDB_MODEL_NAME }}
+```
+
+Then, we have our main, toughest workflow, tests.yaml, which is only executed on pull requests for the main branch. It first checks some linting with flake8, which is quite strict (at the end we decided to skip some code errors that we considered negligible), and if it succeeds, it verifies the whole pipeline in the main three operating systems: Mac OS, Windows and Linux. It basically performs these actions:
+
+- Checkout the branch
+- Install the environment
+- Pull the preprocessed data and the models from the dvc
+- Runs all the unit tests
+
+For ensuring that our workflow file would run on all operating systems, we implemented two key solutions:
+- We first forced all the actions to use the Linux Bash as command line, so that we could write all the commands we need to execute in the same format (Bash)
+- We introduced a conditional to perform the pytorch installation properly depending on the system.
+
+This can be seen in the first part of the installation & setup task:
+
+      - name: Install dependencies
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            echo "Installing PyTorch with CUDA for Linux"
+            pip install torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cu118
+          else
+            echo "Installing CPU-only PyTorch for Windows/macOS"
+            pip install torch torchvision
+          fi
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+          pip install tomli
+          pip install coverage
+          pip install pytest
+          pip install -e .
+          pip list
+          pip install dvc
+          pip install dv[gs]
+        shell: bash
+
+Additionally, we setup our google Cloud credentials via github Secrets, as well as the wandb ones, as we check them as well during the model performance test (as explained before).
+
+---
 
 ## Running code and tracking experiments
 
@@ -339,7 +438,19 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 12 fill here ---
+--- question 12 fill here
+We used a very simple approach, where we take advantage of both config files and wandb logging.
+
+First of all, our training script is able to run in three different modes:
+- local, with no wandb connection, used to do quick local tests.
+- wandb-run, single training run (one set of parameters), logging both the parameters setup and the model to wandb.
+- sweep, taking a sweep.yaml file that configures up a set of parameters to try. Each run is also logged into wandb.
+
+
+This way, when someone wanted to run a "public" experiment, he just logged into wandb setting up his own WANDB_API_KEY and our WANDB_MODEL_NAME, established the parameters in the corresponding YAML files (either single-run, config.yaml, or sweep, sweep.yaml) and executed the run with the desired argument. For example, to run a sweep: `python src/dog_breed_classifier/train.py sweep`.
+
+With this approach, as the model is logged via wandb, and after the experiment we could access to whatever specific run/version of the model we wanted, checking both its performance in terms of loss/accuracy, iterations run and other hyperparameters of the model.
+ ---
 
 ### Question 13
 
@@ -354,7 +465,16 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 13 fill here ---
+--- question 13 fill here
+
+As explained in the previous question, we took complete advantage of the wandb model registry to keep track of all our model iterations, versions and experiments. As literally all the experiments we wanted were logged there, in case we wanted to reproduce a specific version we would just:
+
+- Go to our wandb project page
+- By viewing the graphs and the logs, select which model we wanted to reproduce. For example, the one that has proven to get the highest accuracy with the lowest number of iterations.
+- Check the model version and parameters.
+- We could just download that version of the model, but if we want to reproduce that experiment, it is as easy as filling our configs/config.yaml file and execute a train run on our code, either locally (`local`) or with wandb logging as well (`wandb-run`).
+
+---
 
 ### Question 14
 
@@ -371,7 +491,21 @@ It is super important because it keeps the code readable and makes easier to ide
 >
 > Answer:
 
---- question 14 fill here ---
+--- question 14 fill here
+
+As explained before, we have completely taken advantage of the wandb logging features. As can be seen in the figure, we have run different experiments varying basic hyperparameters during training: batch size, number of epochs, learning rate and model (we tested both resnet50 and resnet18).
+
+[figure1](figures/wandb-experiments.png)
+
+
+We tracked both training and validation loss and accuracy, as well as runtime for contrasing efficiency. An example of these metrics from the last experiments can be seen in the following figure:
+
+[figure2](figures/wandb_graphs.png)
+
+We contrasted consistently the difference in both loss and accuracy between both sets, discarding those iterations with a higher training performance
+but a significant difference with respect to the validation dataset, trying to minimize the overfitting present in our models. For this reason we also started testing with a pretty low number of iterations, as we verified that for the best setups after the fifth iteration or so the model just overfits, with no further improvement in validation metrics.
+
+ ---
 
 ### Question 15
 

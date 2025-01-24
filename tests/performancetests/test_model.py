@@ -4,6 +4,7 @@ import torch
 import wandb
 from src.dog_breed_classifier.model import SimpleResNetClassifier
 
+
 def load_model_from_artifact(model_name: str, api_key: str, device: torch.device):
     """
     Load the model from a W&B artifact.
@@ -20,7 +21,7 @@ def load_model_from_artifact(model_name: str, api_key: str, device: torch.device
         raise ValueError("Model name or API key is not provided.")
 
     print(f"Loading model from artifact: {model_name}")
-    
+
     # Initialize the W&B API with the provided API key
     api = wandb.Api(api_key=api_key)
     artifact = api.artifact(model_name, type="model")
@@ -35,6 +36,7 @@ def load_model_from_artifact(model_name: str, api_key: str, device: torch.device
     model = SimpleResNetClassifier(params=params)
     model.load_state_dict(torch.load(model_path, map_location=device))
     return model.to(device)
+
 
 def test_model_speed():
     """
@@ -57,7 +59,7 @@ def test_model_speed():
     batch_size = 1
     input_size = (3, 224, 224)  # Expected input size for ResNet models
     num_iterations = 100
-    time_limit = 50  # Time limit for 100 predictions (in seconds)
+    time_limit = 5  # Time limit for 100 predictions (in seconds)
 
     # Measure prediction speed
     inputs = torch.randn(batch_size, *input_size).to(device)
@@ -70,6 +72,7 @@ def test_model_speed():
     total_time = end_time - start_time
     print(f"Total time for {num_iterations} predictions: {total_time:.4f} seconds.")
     assert total_time < time_limit, f"Model predictions took too long: {total_time:.4f} seconds."
+
 
 if __name__ == "__main__":
     test_model_speed()
